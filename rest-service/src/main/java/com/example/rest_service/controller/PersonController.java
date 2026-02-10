@@ -22,7 +22,7 @@ public class PersonController {
 
     @PostMapping
     public void save(@RequestBody final PersonDTO person){
-
+        personService.save(person);
     }
 
     @PostMapping("/search")

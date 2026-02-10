@@ -26,11 +26,13 @@ public class RestConfiguration extends ElasticsearchConfiguration {
 
     @Override
     public ClientConfiguration clientConfiguration() {
+        String hostNormalized = host == null ? "" : host.replaceFirst("(?i)https?://", "");
+
         return ClientConfiguration.builder()
-                .connectedTo(host + ":" + port)
-                .usingSsl(builSSLContext())
-                .withBasicAuth(username, password)
-                .build();
+            .connectedTo(hostNormalized + ":" + port)
+            .usingSsl(builSSLContext())
+            .withBasicAuth(username, password)
+            .build();
     }
 
     private static SSLContext builSSLContext() {

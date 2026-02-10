@@ -10,7 +10,9 @@ import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.search.query.QueryType;
 import com.example.rest_service.search.query.SearchMeta;
 import com.example.rest_service.service.converter.PersonDTOConverter;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PersonServiceImpl implements IPersonService {
 
     private final PersonRepository repository;
@@ -29,6 +31,11 @@ public class PersonServiceImpl implements IPersonService {
     @Override
     public void save(PersonDocument person) {
         repository.save(person);
+    }
+
+    @Override
+    public void save(PersonDTO person) {
+        repository.save(converter.convertToDocument(person));
     }
 
     @Override

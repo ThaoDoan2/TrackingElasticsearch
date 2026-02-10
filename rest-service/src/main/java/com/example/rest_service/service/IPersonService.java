@@ -10,6 +10,8 @@ public interface IPersonService {
 
     public void save(PersonDocument person);
 
+    public void save(PersonDTO person);
+
     // public List<PersonDocument> search(SearchFilters filters);
 
     public List<PersonDTO> search(SearchFilters filters);
