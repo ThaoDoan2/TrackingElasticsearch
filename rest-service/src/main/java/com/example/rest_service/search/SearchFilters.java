@@ -2,6 +2,9 @@ package com.example.rest_service.search;
 
 public class SearchFilters {
     private String term;
+    private String gameVersion;
+    private String fromDate;
+    private String toDate;
 
     public String getTerm() {
         return term;
@@ -10,5 +13,28 @@ public class SearchFilters {
     public void setTerm(String term) {
         this.term = term;
     }
-    
+
+    public String getGameVersion() {
+        return gameVersion;
+    }
+
+    public void setGameVersion(String gameVersion) {
+        this.gameVersion = gameVersion;
+    }
+
+    public String getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(String fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public String getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(String toDate) {
+        this.toDate = toDate;
+    }
 }

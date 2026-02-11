@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.example.rest_service.dto.IapDTO;
 import com.example.rest_service.dto.PersonDTO;
+import com.example.rest_service.repository.iap.IapDocument;
 import com.example.rest_service.repository.person.PersonDocument;
 import com.example.rest_service.service.converter.IConverter;
 
@@ -21,4 +23,10 @@ public class SearchConfiguration {
         return new ElasticsearchProxy<>(client, converters);
     }
 
+    @Bean
+    public ElasticsearchProxy<IapDocument, IapDTO> iapElasticsearchProxy(
+            ElasticsearchClient client,
+            List<IConverter<IapDocument, IapDTO>> converters) {
+        return new ElasticsearchProxy<>(client, converters);
+    }
 }

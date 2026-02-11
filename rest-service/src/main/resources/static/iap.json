@@ -1,0 +1,64 @@
+{
+    "properties": {
+        "id": {
+            "type": "keyword"
+        },
+        "userId": {
+            "type": "keyword"
+        },
+        "gameId": {
+            "type": "keyword"
+        },
+        "eventType": {
+            "type": "keyword"
+        },
+        "placement": {
+            "type": "keyword"
+        },
+        "subPlacement": {
+            "type": "keyword"
+        },
+        "platform": {
+            "type": "keyword"
+        },
+        "gameVersion": {
+            "type": "keyword"
+        },
+        "level": {
+            "type": "integer"
+        },
+        "loggedDay": {
+            "type": "integer"
+        },
+        "accountCreatedDate": {
+            "type": "date"
+        },
+        "date": {
+            "type": "date"
+        },
+        "productId": {
+            "type": "keyword"
+        },
+        "transactionId": {
+            "type": "keyword"
+        },
+        "orderId": {
+            "type": "keyword"
+        },
+        "purchaseState": {
+            "type": "keyword"
+        },
+        "receipt": {
+            "type": "text"
+        },
+        "currencyCode": {
+            "type": "keyword"
+        },
+        "purchaseToken": {
+            "type": "keyword"
+        },
+        "price": {
+            "type": "double"
+        }
+    }
+}
