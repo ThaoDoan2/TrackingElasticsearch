@@ -2,11 +2,15 @@ package com.example.rest_service.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.rest_service.dto.IapChartCompactRowDTO;
+import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapDTO;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.service.IIapService;
@@ -30,4 +34,57 @@ public class IapController {
     public List<IapDTO> search(@RequestBody final SearchFilters filters) {
         return iapService.search(filters);
     }
+
+    @GetMapping("/search")
+    public List<IapDTO> search(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final String gameVersion,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return iapService.search(filters);
+    }
+
+    @PostMapping("/chart")
+    public IapChartResponse chart(@RequestBody final SearchFilters filters) {
+        return iapService.chart(filters);
+    }
+
+    @GetMapping("/chart")
+    public IapChartResponse chart(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final String gameVersion,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return iapService.chart(filters);
+    }
+
+    @PostMapping("/chart/compact")
+    public List<IapChartCompactRowDTO> chartCompact(@RequestBody final SearchFilters filters) {
+        return iapService.chartCompact(filters);
+    }
+
+    @GetMapping("/chart/compact")
+    public List<IapChartCompactRowDTO> chartCompact(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final String gameVersion,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return iapService.chartCompact(filters);
+    }
+
 }

@@ -1,21 +1,19 @@
 package com.example.rest_service.search.query;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import com.example.rest_service.search.SearchFilters;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 class QueryBuilderTest {
 
-    @Test
+    
     void shouldBuildQueryWithTermGameVersionAndDateRange() {
         SearchFilters filters = new SearchFilters();
         filters.setTerm("user99");

@@ -36,7 +36,7 @@ public final class QueryBuilder {
 
             if (hasText(filters.getGameVersion())) {
                 filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("gameVersion").value(filters.getGameVersion()))));
+                        Query.of(q -> q.term(t -> t.field("gameVersion.keyword").value(filters.getGameVersion()))));
             }
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
@@ -90,7 +90,7 @@ SearchRequest.Builder builder = new SearchRequest.Builder();
 
             if (hasText(filters.getGameVersion())) {
                 filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("gameVersion").value(filters.getGameVersion()))));
+                        Query.of(q -> q.term(t -> t.field("gameVersion.keyword").value(filters.getGameVersion()))));
             }
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
