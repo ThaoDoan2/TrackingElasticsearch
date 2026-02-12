@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import com.example.rest_service.dto.IapChartCompactRowDTO;
 import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapChartSeriesDTO;
+import com.example.rest_service.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.dto.IapDTO;
 import com.example.rest_service.repository.iap.IapDocument;
 import com.example.rest_service.repository.iap.IapRepository;
@@ -87,6 +88,16 @@ public class IapServiceImpl implements IIapService {
             return executeCompactChartQuery(filters, "productId.keyword", "gameVersion.keyword");
         } catch (Exception error) {
             LOG.error("IAP compact chart query failed. Root cause: {}", error.getMessage(), error);
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<IapDailyProductTotalDTO> totalPurchasePerDay(SearchFilters filters) {
+        try {
+            return executeTotalPurchasePerDayQuery(filters, "productId.keyword", "gameVersion.keyword");
+        } catch (Exception error) {
+            LOG.error("IAP total purchase query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
         }
     }
@@ -176,6 +187,52 @@ public class IapServiceImpl implements IIapService {
                         .aggregations("by_product", sub -> sub
                                 .terms(t -> t.field(productField).size(1000)))),
                 Void.class);
+    }
+
+    private List<IapDailyProductTotalDTO> executeTotalPurchasePerDayQuery(SearchFilters filters, String productField,
+            String gameVersionField) throws IOException {
+        final Query query = buildChartQuery(filters, gameVersionField);
+        SearchResponse<Void> response = elasticsearchClient.search(s -> s
+                .index("iap")
+                .size(0)
+                .query(query)
+                .aggregations("by_date", a -> a
+                        .dateHistogram(d -> d
+                                .field("date")
+                                .calendarInterval(CalendarInterval.Day)
+                                .format("yyyy-MM-dd")
+                                .minDocCount(1))
+                        .aggregations("by_product", sub -> sub
+                                .terms(t -> t.field(productField).size(1000))
+                                .aggregations("total_price", priceAgg -> priceAgg.sum(sum -> sum.field("price"))))),
+                Void.class);
+
+        List<IapDailyProductTotalDTO> rows = new ArrayList<>();
+        var byDate = response.aggregations().get("by_date");
+        if (byDate == null || !byDate.isDateHistogram()) {
+            return rows;
+        }
+
+        for (var dateBucket : byDate.dateHistogram().buckets().array()) {
+            Map<String, Double> products = new LinkedHashMap<>();
+            var byProduct = dateBucket.aggregations().get("by_product");
+            if (byProduct != null && byProduct.isSterms()) {
+                for (var productBucket : byProduct.sterms().buckets().array()) {
+                    double totalPrice = 0D;
+                    var totalPriceAgg = productBucket.aggregations().get("total_price");
+                    if (totalPriceAgg != null && totalPriceAgg.isSum()) {
+                        Double value = totalPriceAgg.sum().value();
+                        if (value != null) {
+                            totalPrice = value;
+                        }
+                    }
+                    products.put(productBucket.key().stringValue(), totalPrice);
+                }
+            }
+            rows.add(new IapDailyProductTotalDTO(dateBucket.keyAsString(), products));
+        }
+
+        return rows;
     }
 
     private Query buildChartQuery(SearchFilters filters, String gameVersionField) {

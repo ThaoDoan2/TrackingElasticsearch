@@ -2,16 +2,19 @@ package com.example.rest_service.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.rest_service.dto.IapChartCompactRowDTO;
 import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapDTO;
+import com.example.rest_service.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.service.IIapService;
 
@@ -20,6 +23,8 @@ import com.example.rest_service.service.IIapService;
 public class IapController {
 
     private final IIapService iapService;
+
+    private static final Logger LOG = LoggerFactory.getLogger(IapController.class);
 
     public IapController(IIapService iapService) {
         this.iapService = iapService;
@@ -79,12 +84,32 @@ public class IapController {
             @RequestParam(required = false) final String gameVersion,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
+                LOG.info("Received request for chartCompact with term={}, gameVersion={}, fromDate={}, toDate={}", term, gameVersion, fromDate, toDate);
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
         filters.setGameVersion(gameVersion);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.chartCompact(filters);
+    }
+
+    @PostMapping("/revenue-by-date")
+    public List<IapDailyProductTotalDTO> totalPurchasePerDay(@RequestBody final SearchFilters filters) {
+        return iapService.totalPurchasePerDay(filters);
+    }
+
+    @GetMapping("/revenue-by-date")
+    public List<IapDailyProductTotalDTO> totalPurchasePerDay(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final String gameVersion,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return iapService.totalPurchasePerDay(filters);
     }
 
 }
