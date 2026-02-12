@@ -38,6 +38,14 @@ public final class QueryBuilder {
                 filterQueries.add(
                         Query.of(q -> q.term(t -> t.field("gameVersion.keyword").value(filters.getGameVersion()))));
             }
+            if (hasText(filters.getCountryCode())) {
+                filterQueries.add(
+                        Query.of(q -> q.term(t -> t.field("country.keyword").value(filters.getCountryCode()))));
+            }
+            if (hasText(filters.getPlatform())) {
+                filterQueries.add(
+                        Query.of(q -> q.term(t -> t.field("platform.keyword").value(filters.getPlatform()))));
+            }
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
             final String toDate = normalizeDate(filters.getToDate(), true);
@@ -91,6 +99,14 @@ SearchRequest.Builder builder = new SearchRequest.Builder();
             if (hasText(filters.getGameVersion())) {
                 filterQueries.add(
                         Query.of(q -> q.term(t -> t.field("gameVersion.keyword").value(filters.getGameVersion()))));
+            }
+            if (hasText(filters.getCountryCode())) {
+                filterQueries.add(
+                        Query.of(q -> q.term(t -> t.field("country.keyword").value(filters.getCountryCode()))));
+            }
+            if (hasText(filters.getPlatform())) {
+                filterQueries.add(
+                        Query.of(q -> q.term(t -> t.field("platform.keyword").value(filters.getPlatform()))));
             }
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);

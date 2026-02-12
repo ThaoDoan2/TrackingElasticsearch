@@ -3,6 +3,8 @@ package com.example.rest_service.search;
 public class SearchFilters {
     private String term;
     private String gameVersion;
+    private String countryCode;
+    private String platform;
     private String fromDate;
     private String toDate;
 
@@ -20,6 +22,22 @@ public class SearchFilters {
 
     public void setGameVersion(String gameVersion) {
         this.gameVersion = gameVersion;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
     }
 
     public String getFromDate() {
