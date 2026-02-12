@@ -36,6 +36,11 @@ public class IapController {
         iapService.save(iap);
     }
 
+    @GetMapping("/platforms")
+    public List<String> getAllPlatforms() {
+        return iapService.getAllPlatforms();
+    }
+
     @PostMapping("/search")
     public List<IapDTO> search(@RequestBody final SearchFilters filters) {
         return iapService.search(filters);

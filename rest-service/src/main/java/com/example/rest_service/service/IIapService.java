@@ -25,4 +25,6 @@ public interface IIapService {
     List<IapDailyProductTotalDTO> totalPurchasePerDay(SearchFilters filters);
 
     List<IapPlacementRatioDTO> purchaseRatioByPlacement(SearchFilters filters);
+
+    List<String> getAllPlatforms();
 }

@@ -113,6 +113,30 @@ public class IapServiceImpl implements IIapService {
         }
     }
 
+    @Override
+    public List<String> getAllPlatforms() {
+        try {
+            SearchResponse<Void> response = elasticsearchClient.search(s -> s
+                    .index("iap")
+                    .size(0)
+                    .aggregations("all_platforms", a -> a
+                            .terms(t -> t.field("platform.keyword").size(1000))),
+                    Void.class);
+
+            var allPlatforms = response.aggregations().get("all_platforms");
+            if (allPlatforms == null || !allPlatforms.isSterms()) {
+                return List.of();
+            }
+
+            return allPlatforms.sterms().buckets().array().stream()
+                    .map(bucket -> bucket.key().stringValue())
+                    .toList();
+        } catch (Exception error) {
+            LOG.error("IAP all platforms query failed. Root cause: {}", error.getMessage(), error);
+            return List.of();
+        }
+    }
+
     private IapChartResponse executeChartQuery(SearchFilters filters, String productField, String gameVersionField)
             throws IOException {
         SearchResponse<Void> response = executeChartAggregationQuery(filters, productField, gameVersionField);
