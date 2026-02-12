@@ -99,7 +99,8 @@ public class IapController {
             @RequestParam(required = false) final String countryCode,
             @RequestParam(required = false) final String platform,
             @RequestParam(required = false) final String fromDate,
-            @RequestParam(required = false) final String toDate) {
+            @RequestParam(required = false) final String toDate,
+            @RequestParam(required = false) final String[] products) {
                 LOG.info("Received request for chartCompact with term={}, gameVersion={}, countryCode={}, platform={}, fromDate={}, toDate={}", term, gameVersion, countryCode, platform, fromDate, toDate);
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
