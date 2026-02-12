@@ -1,5 +1,7 @@
 package com.example.rest_service.search;
 
+import java.util.List;
+
 public class SearchFilters {
     private String term;
     private String gameVersion;
@@ -7,6 +9,7 @@ public class SearchFilters {
     private String platform;
     private String fromDate;
     private String toDate;
+    private List<String> placements;
 
     public String getTerm() {
         return term;
@@ -54,5 +57,13 @@ public class SearchFilters {
 
     public void setToDate(String toDate) {
         this.toDate = toDate;
+    }
+
+    public List<String> getPlacements() {
+        return placements;
+    }
+
+    public void setPlacements(List<String> placements) {
+        this.placements = placements;
     }
 }

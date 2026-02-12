@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import com.example.rest_service.dto.RewardedAmountByDayPlacementDTO;
 import com.example.rest_service.dto.RewardedAmountByLevelDTO;
 import com.example.rest_service.dto.RewardedAmountByLevelPlacementDTO;
+import com.example.rest_service.dto.RewardedAdsFilterOptionsDTO;
 import com.example.rest_service.search.SearchFilters;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -78,6 +81,35 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
                     error);
             return List.of();
         }
+    }
+
+    @Override
+    public RewardedAdsFilterOptionsDTO getFilterOptions() {
+        return new RewardedAdsFilterOptionsDTO(
+                getDistinctFieldValues("placement"),
+                getDistinctFieldValues("gameVersion"),
+                getDistinctFieldValues("country"),
+                getDistinctFieldValues("platform"));
+    }
+
+    @Override
+    public List<String> getAllCountries() {
+        return getDistinctFieldValues("country");
+    }
+
+    @Override
+    public List<String> getAllPlacements() {
+        return getDistinctFieldValues("placement");
+    }
+
+    @Override
+    public List<String> getAllGameVersions() {
+        return getDistinctFieldValues("gameVersion");
+    }
+
+    @Override
+    public List<String> getAllPlatforms() {
+        return getDistinctFieldValues("platform");
     }
 
     @Override
@@ -247,6 +279,17 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
         if (hasText(filters.getPlatform())) {
             filterQueries.add(Query.of(q -> q.term(t -> t.field("platform").value(filters.getPlatform()))));
         }
+        if (filters.getPlacements() != null && !filters.getPlacements().isEmpty()) {
+            final List<Query> placementQueries = filters.getPlacements().stream()
+                    .filter(RewardedAdsServiceImpl::hasText)
+                    .map(String::trim)
+                    .distinct()
+                    .map(placement -> Query.of(q -> q.term(t -> t.field("placement").value(placement))))
+                    .collect(Collectors.toList());
+            if (!placementQueries.isEmpty()) {
+                filterQueries.add(Query.of(q -> q.bool(b -> b.should(placementQueries).minimumShouldMatch("1"))));
+            }
+        }
 
         final String fromDate = normalizeDate(filters.getFromDate(), false);
         final String toDate = normalizeDate(filters.getToDate(), true);
@@ -282,6 +325,42 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
             }
             return b;
         }));
+    }
+
+    private List<String> getDistinctFieldValues(final String fieldName) {
+        try {
+            return executeDistinctTermsQuery(fieldName);
+        } catch (Exception baseFieldError) {
+            LOG.warn("Distinct query for field {} failed, fallback to {}.keyword. Root cause: {}", fieldName,
+                    fieldName + ".keyword", baseFieldError.getMessage());
+            try {
+                return executeDistinctTermsQuery(fieldName + ".keyword");
+            } catch (Exception keywordFieldError) {
+                LOG.error("Distinct query for field {} failed. Root cause: {}", fieldName,
+                        keywordFieldError.getMessage(), keywordFieldError);
+                return List.of();
+            }
+        }
+    }
+
+    private List<String> executeDistinctTermsQuery(final String fieldName) throws IOException {
+        SearchResponse<Void> response = elasticsearchClient.search(s -> s
+                .index(INDEX)
+                .size(0)
+                .aggregations("values", a -> a.terms(t -> t.field(fieldName).size(1000))),
+                Void.class);
+
+        var values = response.aggregations().get("values");
+        if (values == null || !values.isSterms()) {
+            return List.of();
+        }
+
+        // TreeSet keeps values unique and sorted for stable filter dropdowns.
+        return new ArrayList<>(values.sterms().buckets().array().stream()
+                .map(bucket -> bucket.key().stringValue())
+                .filter(RewardedAdsServiceImpl::hasText)
+                .map(String::trim)
+                .collect(Collectors.toCollection(TreeSet::new)));
     }
 
     private static boolean hasText(final String value) {

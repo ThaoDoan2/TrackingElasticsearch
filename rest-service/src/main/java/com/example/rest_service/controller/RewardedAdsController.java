@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.rest_service.dto.RewardedAmountByDayPlacementDTO;
 import com.example.rest_service.dto.RewardedAmountByLevelDTO;
 import com.example.rest_service.dto.RewardedAmountByLevelPlacementDTO;
+import com.example.rest_service.dto.RewardedAdsFilterOptionsDTO;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.service.IRewardedAdsService;
 
@@ -23,6 +24,31 @@ public class RewardedAdsController {
 
     public RewardedAdsController(IRewardedAdsService rewardedAdsService) {
         this.rewardedAdsService = rewardedAdsService;
+    }
+
+    @GetMapping("/filters")
+    public RewardedAdsFilterOptionsDTO getFilterOptions() {
+        return rewardedAdsService.getFilterOptions();
+    }
+
+    @GetMapping("/countries")
+    public List<String> getAllCountries() {
+        return rewardedAdsService.getAllCountries();
+    }
+
+    @GetMapping("/placements")
+    public List<String> getAllPlacements() {
+        return rewardedAdsService.getAllPlacements();
+    }
+
+    @GetMapping("/game-versions")
+    public List<String> getAllGameVersions() {
+        return rewardedAdsService.getAllGameVersions();
+    }
+
+    @GetMapping("/platforms")
+    public List<String> getAllPlatforms() {
+        return rewardedAdsService.getAllPlatforms();
     }
 
     @PostMapping("/amount-by-date-placement")
@@ -37,6 +63,7 @@ public class RewardedAdsController {
             @RequestParam(required = false) final String gameVersion,
             @RequestParam(required = false) final String countryCode,
             @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> placements,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -44,6 +71,7 @@ public class RewardedAdsController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return rewardedAdsService.rewardedAmountPerDayGroupedByPlacement(filters);
@@ -60,6 +88,7 @@ public class RewardedAdsController {
             @RequestParam(required = false) final String gameVersion,
             @RequestParam(required = false) final String countryCode,
             @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> placements,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -67,6 +96,7 @@ public class RewardedAdsController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return rewardedAdsService.rewardedAmountPerLevel(filters);
@@ -84,6 +114,7 @@ public class RewardedAdsController {
             @RequestParam(required = false) final String gameVersion,
             @RequestParam(required = false) final String countryCode,
             @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> placements,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -91,6 +122,7 @@ public class RewardedAdsController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return rewardedAdsService.rewardedAmountPerLevelGroupedByPlacement(filters);
