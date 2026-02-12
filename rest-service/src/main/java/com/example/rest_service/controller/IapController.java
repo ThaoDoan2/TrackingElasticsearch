@@ -15,6 +15,7 @@ import com.example.rest_service.dto.IapChartCompactRowDTO;
 import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapDTO;
 import com.example.rest_service.dto.IapDailyProductTotalDTO;
+import com.example.rest_service.dto.IapPlacementRatioDTO;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.service.IIapService;
 
@@ -110,6 +111,25 @@ public class IapController {
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.totalPurchasePerDay(filters);
+    }
+
+    @PostMapping("/ratio/placement")
+    public List<IapPlacementRatioDTO> purchaseRatioByPlacement(@RequestBody final SearchFilters filters) {
+        return iapService.purchaseRatioByPlacement(filters);
+    }
+
+    @GetMapping("/ratio/placement")
+    public List<IapPlacementRatioDTO> purchaseRatioByPlacement(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final String gameVersion,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return iapService.purchaseRatioByPlacement(filters);
     }
 
 }

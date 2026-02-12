@@ -22,6 +22,7 @@ import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapChartSeriesDTO;
 import com.example.rest_service.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.dto.IapDTO;
+import com.example.rest_service.dto.IapPlacementRatioDTO;
 import com.example.rest_service.repository.iap.IapDocument;
 import com.example.rest_service.repository.iap.IapRepository;
 import com.example.rest_service.search.ElasticsearchProxy;
@@ -98,6 +99,16 @@ public class IapServiceImpl implements IIapService {
             return executeTotalPurchasePerDayQuery(filters, "productId.keyword", "gameVersion.keyword");
         } catch (Exception error) {
             LOG.error("IAP total purchase query failed. Root cause: {}", error.getMessage(), error);
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<IapPlacementRatioDTO> purchaseRatioByPlacement(SearchFilters filters) {
+        try {
+            return executePurchaseRatioByPlacementQuery(filters, "placement.keyword", "gameVersion.keyword");
+        } catch (Exception error) {
+            LOG.error("IAP purchase ratio by placement query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
         }
     }
@@ -230,6 +241,46 @@ public class IapServiceImpl implements IIapService {
                 }
             }
             rows.add(new IapDailyProductTotalDTO(dateBucket.keyAsString(), products));
+        }
+
+        return rows;
+    }
+
+    private List<IapPlacementRatioDTO> executePurchaseRatioByPlacementQuery(SearchFilters filters, String placementField,
+            String gameVersionField) throws IOException {
+        final Query query = buildChartQuery(filters, gameVersionField);
+        SearchResponse<Void> response = elasticsearchClient.search(s -> s
+                .index("iap")
+                .size(0)
+                .query(query)
+                .aggregations("by_placement", a -> a
+                        .terms(t -> t.field(placementField).size(1000).missing("UNKNOWN"))
+                        .aggregations("total_revenue", sub -> sub.sum(sum -> sum.field("price")))),
+                Void.class);
+
+        List<IapPlacementRatioDTO> rows = new ArrayList<>();
+        var byPlacement = response.aggregations().get("by_placement");
+        if (byPlacement == null || !byPlacement.isSterms()) {
+            return rows;
+        }
+
+        double totalRevenue = byPlacement.sterms().buckets().array().stream()
+                .map(bucket -> bucket.aggregations().get("total_revenue"))
+                .filter(agg -> agg != null && agg.isSum() && agg.sum().value() != null)
+                .mapToDouble(agg -> agg.sum().value())
+                .sum();
+        if (totalRevenue <= 0D) {
+            return rows;
+        }
+
+        for (var bucket : byPlacement.sterms().buckets().array()) {
+            double revenue = 0D;
+            var totalRevenueAgg = bucket.aggregations().get("total_revenue");
+            if (totalRevenueAgg != null && totalRevenueAgg.isSum() && totalRevenueAgg.sum().value() != null) {
+                revenue = totalRevenueAgg.sum().value();
+            }
+            double ratio = revenue / totalRevenue;
+            rows.add(new IapPlacementRatioDTO(bucket.key().stringValue(), revenue, ratio));
         }
 
         return rows;
