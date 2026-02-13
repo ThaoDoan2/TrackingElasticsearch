@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -314,15 +315,9 @@ public class IapServiceImpl implements IIapService {
         final List<Query> filterQueries = new ArrayList<>();
         final List<Query> shouldQueries = new ArrayList<>();
 
-        if (hasText(filters.getGameVersion())) {
-            filterQueries.add(Query.of(q -> q.term(t -> t.field(gameVersionField).value(filters.getGameVersion()))));
-        }
-        if (hasText(filters.getCountryCode())) {
-            filterQueries.add(Query.of(q -> q.term(t -> t.field("country.keyword").value(filters.getCountryCode()))));
-        }
-        if (hasText(filters.getPlatform())) {
-            filterQueries.add(Query.of(q -> q.term(t -> t.field("platform.keyword").value(filters.getPlatform()))));
-        }
+        addMultiValueExactFilter(filterQueries, gameVersionField, filters.getGameVersion());
+        addMultiValueExactFilter(filterQueries, "country.keyword", filters.getCountryCode());
+        addMultiValueExactFilter(filterQueries, "platform.keyword", filters.getPlatform());
 
         final String fromDate = normalizeDate(filters.getFromDate(), false);
         final String toDate = normalizeDate(filters.getToDate(), true);
@@ -358,6 +353,28 @@ public class IapServiceImpl implements IIapService {
             }
             return b;
         }));
+    }
+
+    private static void addMultiValueExactFilter(final List<Query> filterQueries, final String fieldName,
+            final List<String> values) {
+        final List<Query> valueQueries = normalizeValues(values).stream()
+                .map(value -> Query.of(q -> q.term(t -> t.field(fieldName).value(value))))
+                .collect(Collectors.toList());
+        if (!valueQueries.isEmpty()) {
+            filterQueries.add(Query.of(q -> q.bool(b -> b.should(valueQueries).minimumShouldMatch("1"))));
+        }
+    }
+
+    private static List<String> normalizeValues(final List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+
+        return values.stream()
+                .filter(IapServiceImpl::hasText)
+                .map(String::trim)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private static boolean hasText(final String value) {

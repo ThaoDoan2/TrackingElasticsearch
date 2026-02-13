@@ -17,7 +17,7 @@ class QueryBuilderTest {
     void shouldBuildQueryWithTermGameVersionAndDateRange() {
         SearchFilters filters = new SearchFilters();
         filters.setTerm("user99");
-        filters.setGameVersion("01");
+        filters.setGameVersion(List.of("01"));
         filters.setFromDate("01/01/2026");
         filters.setToDate("02/11/2026");
 

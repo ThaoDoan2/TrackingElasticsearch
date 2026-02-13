@@ -4,9 +4,9 @@ import java.util.List;
 
 public class SearchFilters {
     private String term;
-    private String gameVersion;
-    private String countryCode;
-    private String platform;
+    private List<String> gameVersion;
+    private List<String> countryCode;
+    private List<String> platform;
     private String fromDate;
     private String toDate;
     private List<String> placements;
@@ -19,27 +19,27 @@ public class SearchFilters {
         this.term = term;
     }
 
-    public String getGameVersion() {
+    public List<String> getGameVersion() {
         return gameVersion;
     }
 
-    public void setGameVersion(String gameVersion) {
+    public void setGameVersion(List<String> gameVersion) {
         this.gameVersion = gameVersion;
     }
 
-    public String getCountryCode() {
+    public List<String> getCountryCode() {
         return countryCode;
     }
 
-    public void setCountryCode(String countryCode) {
+    public void setCountryCode(List<String> countryCode) {
         this.countryCode = countryCode;
     }
 
-    public String getPlatform() {
+    public List<String> getPlatform() {
         return platform;
     }
 
-    public void setPlatform(String platform) {
+    public void setPlatform(List<String> platform) {
         this.platform = platform;
     }
 

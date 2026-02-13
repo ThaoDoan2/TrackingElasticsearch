@@ -60,9 +60,9 @@ public class RewardedAdsController {
     @GetMapping("/amount-by-date-placement")
     public List<RewardedAmountByDayPlacementDTO> rewardedAmountPerDayGroupedByPlacement(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final List<String> placements,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
@@ -85,9 +85,9 @@ public class RewardedAdsController {
     @GetMapping("/amount-by-level")
     public List<RewardedAmountByLevelDTO> rewardedAmountPerLevel(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final List<String> placements,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
@@ -111,9 +111,9 @@ public class RewardedAdsController {
     @GetMapping("/amount-by-level-placement")
     public List<RewardedAmountByLevelPlacementDTO> rewardedAmountPerLevelGroupedByPlacement(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final List<String> placements,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {

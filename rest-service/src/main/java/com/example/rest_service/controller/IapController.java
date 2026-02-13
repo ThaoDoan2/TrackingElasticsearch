@@ -49,9 +49,9 @@ public class IapController {
     @GetMapping("/search")
     public List<IapDTO> search(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -72,9 +72,9 @@ public class IapController {
     @GetMapping("/chart")
     public IapChartResponse chart(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -95,9 +95,9 @@ public class IapController {
     @GetMapping("/chart/compact")
     public List<IapChartCompactRowDTO> chartCompact(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate,
             @RequestParam(required = false) final String[] products) {
@@ -120,9 +120,9 @@ public class IapController {
     @GetMapping("/revenue-by-date")
     public List<IapDailyProductTotalDTO> totalPurchasePerDay(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -143,9 +143,9 @@ public class IapController {
     @GetMapping("/ratio/placement")
     public List<IapPlacementRatioDTO> purchaseRatioByPlacement(
             @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final String gameVersion,
-            @RequestParam(required = false) final String countryCode,
-            @RequestParam(required = false) final String platform,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();

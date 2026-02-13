@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.example.rest_service.search.SearchFilters;
 
@@ -34,18 +35,9 @@ public final class QueryBuilder {
                 }
             }
 
-            if (hasText(filters.getGameVersion())) {
-                filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("gameVersion.keyword").value(filters.getGameVersion()))));
-            }
-            if (hasText(filters.getCountryCode())) {
-                filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("country.keyword").value(filters.getCountryCode()))));
-            }
-            if (hasText(filters.getPlatform())) {
-                filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("platform.keyword").value(filters.getPlatform()))));
-            }
+            addMultiValueExactFilter(filterQueries, "gameVersion.keyword", filters.getGameVersion());
+            addMultiValueExactFilter(filterQueries, "country.keyword", filters.getCountryCode());
+            addMultiValueExactFilter(filterQueries, "platform.keyword", filters.getPlatform());
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
             final String toDate = normalizeDate(filters.getToDate(), true);
@@ -96,18 +88,9 @@ SearchRequest.Builder builder = new SearchRequest.Builder();
                 }
             }
 
-            if (hasText(filters.getGameVersion())) {
-                filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("gameVersion.keyword").value(filters.getGameVersion()))));
-            }
-            if (hasText(filters.getCountryCode())) {
-                filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("country.keyword").value(filters.getCountryCode()))));
-            }
-            if (hasText(filters.getPlatform())) {
-                filterQueries.add(
-                        Query.of(q -> q.term(t -> t.field("platform.keyword").value(filters.getPlatform()))));
-            }
+            addMultiValueExactFilter(filterQueries, "gameVersion.keyword", filters.getGameVersion());
+            addMultiValueExactFilter(filterQueries, "country.keyword", filters.getCountryCode());
+            addMultiValueExactFilter(filterQueries, "platform.keyword", filters.getPlatform());
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
             final String toDate = normalizeDate(filters.getToDate(), true);
@@ -145,6 +128,28 @@ SearchRequest.Builder builder = new SearchRequest.Builder();
     
     private static boolean hasText(final String value) {
         return value != null && !value.isBlank();
+    }
+
+    private static void addMultiValueExactFilter(final List<Query> filterQueries, final String fieldName,
+            final List<String> values) {
+        final List<Query> valueQueries = normalizeValues(values).stream()
+                .map(value -> Query.of(q -> q.term(t -> t.field(fieldName).value(value))))
+                .collect(Collectors.toList());
+        if (!valueQueries.isEmpty()) {
+            filterQueries.add(Query.of(q -> q.bool(b -> b.should(valueQueries).minimumShouldMatch("1"))));
+        }
+    }
+
+    private static List<String> normalizeValues(final List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+
+        return values.stream()
+                .filter(QueryBuilder::hasText)
+                .map(String::trim)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private static String normalizeDate(final String rawDate, final boolean endOfDay) {

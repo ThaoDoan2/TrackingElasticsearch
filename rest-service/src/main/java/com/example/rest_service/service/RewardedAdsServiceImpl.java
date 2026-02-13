@@ -269,16 +269,9 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
         final List<Query> filterQueries = new ArrayList<>();
         final List<Query> shouldQueries = new ArrayList<>();
 
-        if (hasText(filters.getGameVersion())) {
-            filterQueries.add(
-                    Query.of(q -> q.term(t -> t.field("gameVersion").value(filters.getGameVersion()))));
-        }
-        if (hasText(filters.getCountryCode())) {
-            filterQueries.add(Query.of(q -> q.term(t -> t.field("country").value(filters.getCountryCode()))));
-        }
-        if (hasText(filters.getPlatform())) {
-            filterQueries.add(Query.of(q -> q.term(t -> t.field("platform").value(filters.getPlatform()))));
-        }
+        addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
+        addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
+        addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
         if (filters.getPlacements() != null && !filters.getPlacements().isEmpty()) {
             final List<Query> placementQueries = filters.getPlacements().stream()
                     .filter(RewardedAdsServiceImpl::hasText)
@@ -325,6 +318,27 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
             }
             return b;
         }));
+    }
+
+    private static void addMultiValueExactFilter(final List<Query> filterQueries, final String fieldName,
+            final List<String> values) {
+        final List<Query> valueQueries = normalizeValues(values).stream()
+                .map(value -> Query.of(q -> q.term(t -> t.field(fieldName).value(value))))
+                .collect(Collectors.toList());
+        if (!valueQueries.isEmpty()) {
+            filterQueries.add(Query.of(q -> q.bool(b -> b.should(valueQueries).minimumShouldMatch("1"))));
+        }
+    }
+
+    private static List<String> normalizeValues(final List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+        return values.stream()
+                .filter(RewardedAdsServiceImpl::hasText)
+                .map(String::trim)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
