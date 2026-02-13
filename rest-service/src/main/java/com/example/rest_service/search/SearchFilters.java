@@ -10,6 +10,8 @@ public class SearchFilters {
     private String fromDate;
     private String toDate;
     private List<String> placements;
+    private Integer minLevel;
+    private Integer maxLevel;
 
     public String getTerm() {
         return term;
@@ -65,5 +67,21 @@ public class SearchFilters {
 
     public void setPlacements(List<String> placements) {
         this.placements = placements;
+    }
+
+    public Integer getMinLevel() {
+        return minLevel;
+    }
+
+    public void setMinLevel(Integer minLevel) {
+        this.minLevel = minLevel;
+    }
+
+    public Integer getMaxLevel() {
+        return maxLevel;
+    }
+
+    public void setMaxLevel(Integer maxLevel) {
+        this.maxLevel = maxLevel;
     }
 }

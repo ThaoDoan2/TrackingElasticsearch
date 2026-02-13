@@ -283,6 +283,18 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
                 filterQueries.add(Query.of(q -> q.bool(b -> b.should(placementQueries).minimumShouldMatch("1"))));
             }
         }
+        if (filters.getMinLevel() != null || filters.getMaxLevel() != null) {
+            filterQueries.add(Query.of(q -> q.range(r -> r.number(n -> {
+                n.field("level");
+                if (filters.getMinLevel() != null) {
+                    n.gte(filters.getMinLevel().doubleValue());
+                }
+                if (filters.getMaxLevel() != null) {
+                    n.lte(filters.getMaxLevel().doubleValue());
+                }
+                return n;
+            }))));
+        }
 
         final String fromDate = normalizeDate(filters.getFromDate(), false);
         final String toDate = normalizeDate(filters.getToDate(), true);

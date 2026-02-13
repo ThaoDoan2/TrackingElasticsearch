@@ -64,6 +64,8 @@ public class RewardedAdsController {
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -72,6 +74,8 @@ public class RewardedAdsController {
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
         filters.setPlacements(placements);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return rewardedAdsService.rewardedAmountPerDayGroupedByPlacement(filters);
@@ -89,6 +93,8 @@ public class RewardedAdsController {
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -97,6 +103,8 @@ public class RewardedAdsController {
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
         filters.setPlacements(placements);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return rewardedAdsService.rewardedAmountPerLevel(filters);
@@ -115,6 +123,8 @@ public class RewardedAdsController {
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
             @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -123,6 +133,8 @@ public class RewardedAdsController {
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
         filters.setPlacements(placements);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return rewardedAdsService.rewardedAmountPerLevelGroupedByPlacement(filters);
