@@ -15,6 +15,7 @@ import com.example.rest_service.dto.IapChartCompactRowDTO;
 import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapDTO;
 import com.example.rest_service.dto.IapDailyProductTotalDTO;
+import com.example.rest_service.dto.IapFilterOptionsDTO;
 import com.example.rest_service.dto.IapPlacementRatioDTO;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.service.IIapService;
@@ -36,9 +37,34 @@ public class IapController {
         iapService.save(iap);
     }
 
+    @GetMapping("/filters")
+    public IapFilterOptionsDTO getFilterOptions() {
+        return iapService.getFilterOptions();
+    }
+
+    @GetMapping("/countries")
+    public List<String> getAllCountries() {
+        return iapService.getAllCountries();
+    }
+
+    @GetMapping("/product-ids")
+    public List<String> getAllProductIds() {
+        return iapService.getAllProductIds();
+    }
+
+    @GetMapping("/placements")
+    public List<String> getAllPlacements() {
+        return iapService.getAllPlacements();
+    }
+
     @GetMapping("/platforms")
     public List<String> getAllPlatforms() {
         return iapService.getAllPlatforms();
+    }
+
+    @GetMapping("/game-versions")
+    public List<String> getAllGameVersions() {
+        return iapService.getAllGameVersions();
     }
 
     @PostMapping("/search")
@@ -52,6 +78,8 @@ public class IapController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -59,6 +87,8 @@ public class IapController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.search(filters);
@@ -75,6 +105,8 @@ public class IapController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -82,6 +114,8 @@ public class IapController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.chart(filters);
@@ -98,6 +132,8 @@ public class IapController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate,
             @RequestParam(required = false) final String[] products) {
@@ -107,6 +143,8 @@ public class IapController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.chartCompact(filters);
@@ -123,6 +161,8 @@ public class IapController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -130,6 +170,8 @@ public class IapController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.totalPurchasePerDay(filters);
@@ -146,6 +188,8 @@ public class IapController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
@@ -153,6 +197,8 @@ public class IapController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.purchaseRatioByPlacement(filters);

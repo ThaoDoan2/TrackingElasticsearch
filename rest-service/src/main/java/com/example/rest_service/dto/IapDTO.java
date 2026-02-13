@@ -3,14 +3,15 @@ package com.example.rest_service.dto;
 public class IapDTO extends BaseDTO {
 
     private String userId;
+    private String country;
     private String gameId;
     private String eventType;
     private String placement;
     private String subPlacement;
     private String platform;
     private String gameVersion;
-    private Integer level;
-    private Integer loggedDay;
+    private Long level;
+    private Long loggedDay;
     private String accountCreatedDate;
     private String date;
     private String productId;
@@ -20,7 +21,7 @@ public class IapDTO extends BaseDTO {
     private String receipt;
     private String currencyCode;
     private String purchaseToken;
-    private Double price;
+    private Float price;
 
     public String getUserId() {
         return userId;
@@ -28,6 +29,14 @@ public class IapDTO extends BaseDTO {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getGameId() {
@@ -78,19 +87,19 @@ public class IapDTO extends BaseDTO {
         this.gameVersion = gameVersion;
     }
 
-    public Integer getLevel() {
+    public Long getLevel() {
         return level;
     }
 
-    public void setLevel(Integer level) {
+    public void setLevel(Long level) {
         this.level = level;
     }
 
-    public Integer getLoggedDay() {
+    public Long getLoggedDay() {
         return loggedDay;
     }
 
-    public void setLoggedDay(Integer loggedDay) {
+    public void setLoggedDay(Long loggedDay) {
         this.loggedDay = loggedDay;
     }
 
@@ -166,11 +175,11 @@ public class IapDTO extends BaseDTO {
         this.purchaseToken = purchaseToken;
     }
 
-    public Double getPrice() {
+    public Float getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(Float price) {
         this.price = price;
     }
 }

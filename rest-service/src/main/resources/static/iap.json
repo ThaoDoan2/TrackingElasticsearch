@@ -1,64 +1,64 @@
 {
     "properties": {
-        "id": {
+        "accountCreatedDate": {
+            "type": "date"
+        },
+        "country": {
             "type": "keyword"
         },
-        "userId": {
+        "currencyCode": {
             "type": "keyword"
         },
-        "gameId": {
-            "type": "keyword"
+        "date": {
+            "type": "date"
         },
         "eventType": {
             "type": "keyword"
         },
-        "placement": {
-            "type": "keyword"
-        },
-        "subPlacement": {
-            "type": "keyword"
-        },
-        "platform": {
+        "gameId": {
             "type": "keyword"
         },
         "gameVersion": {
             "type": "keyword"
         },
         "level": {
-            "type": "integer"
+            "type": "long"
         },
         "loggedDay": {
-            "type": "integer"
-        },
-        "accountCreatedDate": {
-            "type": "date"
-        },
-        "date": {
-            "type": "date"
-        },
-        "productId": {
-            "type": "keyword"
-        },
-        "transactionId": {
-            "type": "keyword"
+            "type": "long"
         },
         "orderId": {
+            "type": "keyword"
+        },
+        "placement": {
+            "type": "keyword"
+        },
+        "platform": {
+            "type": "keyword"
+        },
+        "price": {
+            "type": "float"
+        },
+        "productId": {
             "type": "keyword"
         },
         "purchaseState": {
             "type": "keyword"
         },
-        "receipt": {
-            "type": "text"
-        },
-        "currencyCode": {
-            "type": "keyword"
-        },
         "purchaseToken": {
             "type": "keyword"
         },
-        "price": {
-            "type": "double"
+        "receipt": {
+            "type": "keyword"
+        },
+        "subPlacement": {
+            "type": "keyword"
+        },
+        "transactionId": {
+            "type": "keyword"
+        },
+        "userId": {
+            "type": "keyword"
         }
     }
 }

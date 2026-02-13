@@ -22,6 +22,7 @@ public class IapDTOConverter implements IConverter<IapDocument, IapDTO> {
         IapDTO dto = new IapDTO();
         dto.setId(document.getId());
         dto.setUserId(document.getUserId());
+        dto.setCountry(document.getCountry());
         dto.setGameId(document.getGameId());
         dto.setEventType(document.getEventType());
         dto.setPlacement(document.getPlacement());
@@ -52,6 +53,7 @@ public class IapDTOConverter implements IConverter<IapDocument, IapDTO> {
         IapDocument document = new IapDocument();
         document.setId(dto.getId());
         document.setUserId(dto.getUserId());
+        document.setCountry(dto.getCountry());
         document.setGameId(dto.getGameId());
         document.setEventType(dto.getEventType());
         document.setPlacement(dto.getPlacement());

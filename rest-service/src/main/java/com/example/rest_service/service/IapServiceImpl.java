@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -21,8 +22,9 @@ import org.springframework.stereotype.Service;
 import com.example.rest_service.dto.IapChartCompactRowDTO;
 import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapChartSeriesDTO;
-import com.example.rest_service.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.dto.IapDTO;
+import com.example.rest_service.dto.IapDailyProductTotalDTO;
+import com.example.rest_service.dto.IapFilterOptionsDTO;
 import com.example.rest_service.dto.IapPlacementRatioDTO;
 import com.example.rest_service.repository.iap.IapDocument;
 import com.example.rest_service.repository.iap.IapRepository;
@@ -77,7 +79,7 @@ public class IapServiceImpl implements IIapService {
     @Override
     public IapChartResponse chart(SearchFilters filters) {
         try {
-            return executeChartQuery(filters, "productId.keyword", "gameVersion.keyword");
+            return executeChartQuery(filters, "productId", "gameVersion");
         } catch (Exception error) {
             LOG.error("IAP chart query failed. Root cause: {}", error.getMessage(), error);
             return new IapChartResponse(List.of(), List.of());
@@ -87,7 +89,7 @@ public class IapServiceImpl implements IIapService {
     @Override
     public List<IapChartCompactRowDTO> chartCompact(SearchFilters filters) {
         try {
-            return executeCompactChartQuery(filters, "productId.keyword", "gameVersion.keyword");
+            return executeCompactChartQuery(filters, "productId", "gameVersion");
         } catch (Exception error) {
             LOG.error("IAP compact chart query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
@@ -97,7 +99,7 @@ public class IapServiceImpl implements IIapService {
     @Override
     public List<IapDailyProductTotalDTO> totalPurchasePerDay(SearchFilters filters) {
         try {
-            return executeTotalPurchasePerDayQuery(filters, "productId.keyword", "gameVersion.keyword");
+            return executeTotalPurchasePerDayQuery(filters, "productId", "gameVersion");
         } catch (Exception error) {
             LOG.error("IAP total purchase query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
@@ -107,7 +109,7 @@ public class IapServiceImpl implements IIapService {
     @Override
     public List<IapPlacementRatioDTO> purchaseRatioByPlacement(SearchFilters filters) {
         try {
-            return executePurchaseRatioByPlacementQuery(filters, "placement.keyword", "gameVersion.keyword");
+            return executePurchaseRatioByPlacementQuery(filters, "placement", "gameVersion");
         } catch (Exception error) {
             LOG.error("IAP purchase ratio by placement query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
@@ -115,27 +117,38 @@ public class IapServiceImpl implements IIapService {
     }
 
     @Override
+    public IapFilterOptionsDTO getFilterOptions() {
+        return new IapFilterOptionsDTO(
+                getDistinctFieldValues("country"),
+                getDistinctFieldValues("productId"),
+                getDistinctFieldValues("placement"),
+                getDistinctFieldValues("platform"),
+                getDistinctFieldValues("gameVersion"));
+    }
+
+    @Override
+    public List<String> getAllCountries() {
+        return getDistinctFieldValues("country");
+    }
+
+    @Override
+    public List<String> getAllProductIds() {
+        return getDistinctFieldValues("productId");
+    }
+
+    @Override
+    public List<String> getAllPlacements() {
+        return getDistinctFieldValues("placement");
+    }
+
+    @Override
     public List<String> getAllPlatforms() {
-        try {
-            SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                    .index("iap")
-                    .size(0)
-                    .aggregations("all_platforms", a -> a
-                            .terms(t -> t.field("platform.keyword").size(1000))),
-                    Void.class);
+        return getDistinctFieldValues("platform");
+    }
 
-            var allPlatforms = response.aggregations().get("all_platforms");
-            if (allPlatforms == null || !allPlatforms.isSterms()) {
-                return List.of();
-            }
-
-            return allPlatforms.sterms().buckets().array().stream()
-                    .map(bucket -> bucket.key().stringValue())
-                    .toList();
-        } catch (Exception error) {
-            LOG.error("IAP all platforms query failed. Root cause: {}", error.getMessage(), error);
-            return List.of();
-        }
+    @Override
+    public List<String> getAllGameVersions() {
+        return getDistinctFieldValues("gameVersion");
     }
 
     private IapChartResponse executeChartQuery(SearchFilters filters, String productField, String gameVersionField)
@@ -316,8 +329,20 @@ public class IapServiceImpl implements IIapService {
         final List<Query> shouldQueries = new ArrayList<>();
 
         addMultiValueExactFilter(filterQueries, gameVersionField, filters.getGameVersion());
-        addMultiValueExactFilter(filterQueries, "country.keyword", filters.getCountryCode());
-        addMultiValueExactFilter(filterQueries, "platform.keyword", filters.getPlatform());
+        addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
+        addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
+        if (filters.getMinLevel() != null || filters.getMaxLevel() != null) {
+            filterQueries.add(Query.of(q -> q.range(r -> r.number(n -> {
+                n.field("level");
+                if (filters.getMinLevel() != null) {
+                    n.gte(filters.getMinLevel().doubleValue());
+                }
+                if (filters.getMaxLevel() != null) {
+                    n.lte(filters.getMaxLevel().doubleValue());
+                }
+                return n;
+            }))));
+        }
 
         final String fromDate = normalizeDate(filters.getFromDate(), false);
         final String toDate = normalizeDate(filters.getToDate(), true);
@@ -379,6 +404,41 @@ public class IapServiceImpl implements IIapService {
 
     private static boolean hasText(final String value) {
         return value != null && !value.isBlank();
+    }
+
+    private List<String> getDistinctFieldValues(final String fieldName) {
+        try {
+            return executeDistinctTermsQuery(fieldName);
+        } catch (Exception baseFieldError) {
+            LOG.warn("Distinct query for field {} failed, fallback to {}.keyword. Root cause: {}", fieldName,
+                    fieldName + ".keyword", baseFieldError.getMessage());
+            try {
+                return executeDistinctTermsQuery(fieldName + ".keyword");
+            } catch (Exception keywordFieldError) {
+                LOG.error("Distinct query for field {} failed. Root cause: {}", fieldName,
+                        keywordFieldError.getMessage(), keywordFieldError);
+                return List.of();
+            }
+        }
+    }
+
+    private List<String> executeDistinctTermsQuery(final String fieldName) throws IOException {
+        SearchResponse<Void> response = elasticsearchClient.search(s -> s
+                .index("iap")
+                .size(0)
+                .aggregations("values", a -> a.terms(t -> t.field(fieldName).size(1000))),
+                Void.class);
+
+        var values = response.aggregations().get("values");
+        if (values == null || !values.isSterms()) {
+            return List.of();
+        }
+
+        return new ArrayList<>(values.sterms().buckets().array().stream()
+                .map(bucket -> bucket.key().stringValue())
+                .filter(IapServiceImpl::hasText)
+                .map(String::trim)
+                .collect(Collectors.toCollection(TreeSet::new)));
     }
 
     private static String normalizeDate(final String rawDate, final boolean endOfDay) {

@@ -35,9 +35,10 @@ public final class QueryBuilder {
                 }
             }
 
-            addMultiValueExactFilter(filterQueries, "gameVersion.keyword", filters.getGameVersion());
-            addMultiValueExactFilter(filterQueries, "country.keyword", filters.getCountryCode());
-            addMultiValueExactFilter(filterQueries, "platform.keyword", filters.getPlatform());
+            addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
+            addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
+            addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
+            addLevelRangeFilter(filterQueries, filters);
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
             final String toDate = normalizeDate(filters.getToDate(), true);
@@ -88,9 +89,10 @@ SearchRequest.Builder builder = new SearchRequest.Builder();
                 }
             }
 
-            addMultiValueExactFilter(filterQueries, "gameVersion.keyword", filters.getGameVersion());
-            addMultiValueExactFilter(filterQueries, "country.keyword", filters.getCountryCode());
-            addMultiValueExactFilter(filterQueries, "platform.keyword", filters.getPlatform());
+            addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
+            addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
+            addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
+            addLevelRangeFilter(filterQueries, filters);
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
             final String toDate = normalizeDate(filters.getToDate(), true);
@@ -150,6 +152,23 @@ SearchRequest.Builder builder = new SearchRequest.Builder();
                 .map(String::trim)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    private static void addLevelRangeFilter(final List<Query> filterQueries, final SearchFilters filters) {
+        if (filters.getMinLevel() == null && filters.getMaxLevel() == null) {
+            return;
+        }
+
+        filterQueries.add(Query.of(q -> q.range(r -> r.number(n -> {
+            n.field("level");
+            if (filters.getMinLevel() != null) {
+                n.gte(filters.getMinLevel().doubleValue());
+            }
+            if (filters.getMaxLevel() != null) {
+                n.lte(filters.getMaxLevel().doubleValue());
+            }
+            return n;
+        }))));
     }
 
     private static String normalizeDate(final String rawDate, final boolean endOfDay) {

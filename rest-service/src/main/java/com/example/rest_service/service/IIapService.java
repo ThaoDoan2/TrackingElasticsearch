@@ -6,6 +6,7 @@ import com.example.rest_service.dto.IapChartCompactRowDTO;
 import com.example.rest_service.dto.IapChartResponse;
 import com.example.rest_service.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.dto.IapDTO;
+import com.example.rest_service.dto.IapFilterOptionsDTO;
 import com.example.rest_service.dto.IapPlacementRatioDTO;
 import com.example.rest_service.repository.iap.IapDocument;
 import com.example.rest_service.search.SearchFilters;
@@ -26,5 +27,15 @@ public interface IIapService {
 
     List<IapPlacementRatioDTO> purchaseRatioByPlacement(SearchFilters filters);
 
+    IapFilterOptionsDTO getFilterOptions();
+
+    List<String> getAllCountries();
+
+    List<String> getAllProductIds();
+
+    List<String> getAllPlacements();
+
     List<String> getAllPlatforms();
+
+    List<String> getAllGameVersions();
 }
