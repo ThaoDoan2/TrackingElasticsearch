@@ -1,29 +1,19 @@
-package com.example.rest_service.repository.gameplay;
+package com.example.rest_service.dto;
 
 import java.util.Date;
 
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Mapping;
-
-import com.example.rest_service.repository.AbstractDocument;
-
-@Document(indexName = "gameplay")
-@Mapping(mappingPath = "static/gameplay.json")
-public class GamePlayDocument extends AbstractDocument {
+public class GamePlayDTO extends BaseDTO {
 
     private String userId;
     private String gameId;
     private String eventType;
-
     private String platform;
     private String country;
     private String gameVersion;
     private Long highestLevel;
     private Long loggedDay;
     private Date accountCreatedDate;
-
     private Date date;
-
     private Long duration;
     private String gameMode;
     private Long gameLevel;
@@ -158,5 +148,4 @@ public class GamePlayDocument extends AbstractDocument {
     public void setCompletion(Long completion) {
         this.completion = completion;
     }
-
 }
