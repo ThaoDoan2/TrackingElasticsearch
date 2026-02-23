@@ -1,0 +1,52 @@
+{
+    "properties": {
+        "accountCreatedDate": {
+            "type": "date"
+        },
+        "completion": {
+            "type": "long"
+        },
+        "country": {
+            "type": "keyword"
+        },
+        "date": {
+            "type": "date"
+        },
+        "difficulty": {
+            "type": "long"
+        },
+        "duration": {
+            "type": "long"
+        },
+        "eventType": {
+            "type": "keyword"
+        },
+        "gameId": {
+            "type": "keyword"
+        },
+        "gameLevel": {
+            "type": "long"
+        },
+        "gameMode": {
+            "type": "keyword"
+        },
+        "gameVersion": {
+            "type": "keyword"
+        },
+        "highestLevel": {
+            "type": "long"
+        },
+        "loggedDay": {
+            "type": "long"
+        },
+        "platform": {
+            "type": "keyword"
+        },
+        "status": {
+            "type": "keyword"
+        },
+        "userId": {
+            "type": "keyword"
+        }
+    }
+}
