@@ -113,7 +113,8 @@ public class GamePlayServiceImpl implements IGamePlayService {
                         .terms(t -> t
                                 .field("gameLevel")
                                 .size(1000)
-                                .order(NamedValue.of("_key", SortOrder.Asc)))
+                                .order(NamedValue.of("_key", SortOrder.Asc))
+                            .minDocCount(1))
                         .aggregations("unique_users", sub -> sub
                                 .cardinality(c -> c.field("userId")))
                         .aggregations("total_duration", sub -> sub
@@ -168,9 +169,7 @@ public class GamePlayServiceImpl implements IGamePlayService {
         final List<GamePlayWinByLevelDTO> result = new ArrayList<>();
         for (long level = fromLevel; level <= toLevel; level++) {
             final GamePlayWinByLevelDTO value = valuesByLevel.get(level);
-            if (value == null) {
-                result.add(new GamePlayWinByLevelDTO(level, 0L, 0L, 0D));
-            } else {
+            if (value != null) {
                 result.add(value);
             }
         }
@@ -244,9 +243,7 @@ public class GamePlayServiceImpl implements IGamePlayService {
         final List<GamePlayStartByLevelDTO> result = new ArrayList<>();
         for (long level = fromLevel; level <= toLevel; level++) {
             final GamePlayStartByLevelDTO value = valuesByLevel.get(level);
-            if (value == null) {
-                result.add(new GamePlayStartByLevelDTO(level, 0L, 0L));
-            } else {
+            if (value != null) {
                 result.add(value);
             }
         }
@@ -318,9 +315,7 @@ public class GamePlayServiceImpl implements IGamePlayService {
         final List<GamePlayLoseByLevelDTO> result = new ArrayList<>();
         for (long level = fromLevel; level <= toLevel; level++) {
             final GamePlayLoseByLevelDTO value = valuesByLevel.get(level);
-            if (value == null) {
-                result.add(new GamePlayLoseByLevelDTO(level, 0L, 0L, 0D));
-            } else {
+            if (value != null) {
                 result.add(value);
             }
         }
