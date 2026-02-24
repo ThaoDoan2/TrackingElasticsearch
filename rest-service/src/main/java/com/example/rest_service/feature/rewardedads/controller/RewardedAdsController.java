@@ -1,0 +1,142 @@
+package com.example.rest_service.feature.rewardedads.controller;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByDayPlacementDTO;
+import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelDTO;
+import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelPlacementDTO;
+import com.example.rest_service.feature.rewardedads.dto.RewardedAdsFilterOptionsDTO;
+import com.example.rest_service.search.SearchFilters;
+import com.example.rest_service.feature.rewardedads.service.IRewardedAdsService;
+
+@RestController
+@RequestMapping("/api/rewarded-ads")
+public class RewardedAdsController {
+
+    private final IRewardedAdsService rewardedAdsService;
+
+    public RewardedAdsController(IRewardedAdsService rewardedAdsService) {
+        this.rewardedAdsService = rewardedAdsService;
+    }
+
+    @GetMapping("/filters")
+    public RewardedAdsFilterOptionsDTO getFilterOptions() {
+        return rewardedAdsService.getFilterOptions();
+    }
+
+    @GetMapping("/countries")
+    public List<String> getAllCountries() {
+        return rewardedAdsService.getAllCountries();
+    }
+
+    @GetMapping("/placements")
+    public List<String> getAllPlacements() {
+        return rewardedAdsService.getAllPlacements();
+    }
+
+    @GetMapping("/game-versions")
+    public List<String> getAllGameVersions() {
+        return rewardedAdsService.getAllGameVersions();
+    }
+
+    @GetMapping("/platforms")
+    public List<String> getAllPlatforms() {
+        return rewardedAdsService.getAllPlatforms();
+    }
+
+    @PostMapping("/amount-by-date-placement")
+    public List<RewardedAmountByDayPlacementDTO> rewardedAmountPerDayGroupedByPlacement(
+            @RequestBody final SearchFilters filters) {
+        return rewardedAdsService.rewardedAmountPerDayGroupedByPlacement(filters);
+    }
+
+    @GetMapping("/amount-by-date-placement")
+    public List<RewardedAmountByDayPlacementDTO> rewardedAmountPerDayGroupedByPlacement(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setCountryCode(countryCode);
+        filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return rewardedAdsService.rewardedAmountPerDayGroupedByPlacement(filters);
+    }
+
+    @PostMapping("/amount-by-level")
+    public List<RewardedAmountByLevelDTO> rewardedAmountPerLevel(@RequestBody final SearchFilters filters) {
+        return rewardedAdsService.rewardedAmountPerLevel(filters);
+    }
+
+    @GetMapping("/amount-by-level")
+    public List<RewardedAmountByLevelDTO> rewardedAmountPerLevel(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setCountryCode(countryCode);
+        filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return rewardedAdsService.rewardedAmountPerLevel(filters);
+    }
+
+    @PostMapping("/amount-by-level-placement")
+    public List<RewardedAmountByLevelPlacementDTO> rewardedAmountPerLevelGroupedByPlacement(
+            @RequestBody final SearchFilters filters) {
+        return rewardedAdsService.rewardedAmountPerLevelGroupedByPlacement(filters);
+    }
+
+    @GetMapping("/amount-by-level-placement")
+    public List<RewardedAmountByLevelPlacementDTO> rewardedAmountPerLevelGroupedByPlacement(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setCountryCode(countryCode);
+        filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return rewardedAdsService.rewardedAmountPerLevelGroupedByPlacement(filters);
+    }
+}

@@ -5,14 +5,14 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.example.rest_service.dto.GamePlayDTO;
-import com.example.rest_service.dto.IapDTO;
+import com.example.rest_service.feature.gameplay.dto.GamePlayDTO;
+import com.example.rest_service.feature.iap.dto.IapDTO;
 import com.example.rest_service.dto.PersonDTO;
-import com.example.rest_service.dto.ResourceDTO;
-import com.example.rest_service.repository.gameplay.GamePlayDocument;
-import com.example.rest_service.repository.iap.IapDocument;
+import com.example.rest_service.feature.resource.dto.ResourceDTO;
+import com.example.rest_service.feature.gameplay.repository.GamePlayDocument;
+import com.example.rest_service.feature.iap.repository.IapDocument;
 import com.example.rest_service.repository.person.PersonDocument;
-import com.example.rest_service.repository.resource.ResourceDocument;
+import com.example.rest_service.feature.resource.repository.ResourceDocument;
 import com.example.rest_service.service.converter.IConverter;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;

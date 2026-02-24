@@ -77,63 +77,6 @@ public final class QueryBuilder {
         return builder.build();
     }
 
-    public static SearchRequest buildIapSearchRequest(final SearchFilters filters, final SearchMeta meta){
-SearchRequest.Builder builder = new SearchRequest.Builder();
-        builder.index(meta.getIndex());
-
-        Query.Builder queryBuilder = new Query.Builder();
-        if (meta.getType() == QueryType.MATCH) {
-            final List<Query> shouldQueries = new ArrayList<>();
-            final List<Query> filterQueries = new ArrayList<>();
-
-            if (hasText(filters.getTerm())) {
-                for (String field : meta.getFields()) {
-                    shouldQueries.add(Query.of(q -> q.match(m -> m.field(field).query(filters.getTerm()))));
-                }
-            }
-
-            addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
-            addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
-            addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
-            addMultiValueExactFilter(filterQueries, "placement", filters.getPlacements());
-            addMultiValueExactFilter(filterQueries, "subPlacement", filters.getSubPlacements());
-            addMultiValueExactFilter(filterQueries, "itemName", filters.getItemNames());
-            addLevelRangeFilter(filterQueries, filters);
-
-            final String fromDate = normalizeDate(filters.getFromDate(), false);
-            final String toDate = normalizeDate(filters.getToDate(), true);
-            if (fromDate != null || toDate != null) {
-                filterQueries.add(Query.of(q -> q.range(r -> r.date(d -> {
-                    d.field("date");
-                    if (fromDate != null) {
-                        d.gte(fromDate);
-                    }
-                    if (toDate != null) {
-                        d.lte(toDate);
-                    }
-                    return d;
-                }))));
-            }
-
-            if (shouldQueries.isEmpty() && filterQueries.isEmpty()) {
-                queryBuilder.matchAll(m -> m);
-            } else {
-                queryBuilder.bool(b -> {
-                    if (!shouldQueries.isEmpty()) {
-                        b.should(shouldQueries).minimumShouldMatch("1");
-                    }
-                    if (!filterQueries.isEmpty()) {
-                        b.filter(filterQueries);
-                    }
-                    return b;
-                });
-            }
-        }
-
-        builder.query(queryBuilder.build());
-        return builder.build();
-    }
-    
     private static boolean hasText(final String value) {
         return value != null && !value.isBlank();
     }
