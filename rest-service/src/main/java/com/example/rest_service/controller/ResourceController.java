@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.rest_service.dto.ResourceDTO;
+import com.example.rest_service.dto.ResourceSourceSinkByDateDTO;
+import com.example.rest_service.dto.ResourceSourceSinkByLevelDTO;
+import com.example.rest_service.dto.ResourceWhereMainDTO;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.service.IResourceService;
 
@@ -33,6 +36,36 @@ public class ResourceController {
         return resourceService.search(filters);
     }
 
+    @GetMapping("/countries")
+    public List<String> getAllCountries() {
+        return resourceService.getAllCountries();
+    }
+
+    @GetMapping("/game-versions")
+    public List<String> getAllGameVersions() {
+        return resourceService.getAllGameVersions();
+    }
+
+    @GetMapping("/platforms")
+    public List<String> getAllPlatforms() {
+        return resourceService.getAllPlatforms();
+    }
+
+    @GetMapping("/placements")
+    public List<String> getAllPlacements() {
+        return resourceService.getAllPlacements();
+    }
+
+    @GetMapping("/sub-placements")
+    public List<String> getAllSubPlacements() {
+        return resourceService.getAllSubPlacements();
+    }
+
+    @GetMapping("/item-names")
+    public List<String> getAllItemNames() {
+        return resourceService.getAllItemNames();
+    }
+
     @GetMapping("/search")
     public List<ResourceDTO> search(
             @RequestParam(required = false) final String term,
@@ -53,6 +86,114 @@ public class ResourceController {
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return resourceService.search(filters);
+    }
+
+    @PostMapping("/source-sink-by-date")
+    public List<ResourceSourceSinkByDateDTO> sourceSinkByDate(@RequestBody final SearchFilters filters) {
+        return resourceService.sourceSinkByDate(filters);
+    }
+
+    @GetMapping("/source-sink-by-date")
+    public List<ResourceSourceSinkByDateDTO> sourceSinkByDate(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setCountryCode(countryCode);
+        filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return resourceService.sourceSinkByDate(filters);
+    }
+
+    @PostMapping("/source-sink-by-level")
+    public List<ResourceSourceSinkByLevelDTO> sourceSinkByLevel(@RequestBody final SearchFilters filters) {
+        return resourceService.sourceSinkByLevel(filters);
+    }
+
+    @GetMapping("/source-sink-by-level")
+    public List<ResourceSourceSinkByLevelDTO> sourceSinkByLevel(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setCountryCode(countryCode);
+        filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return resourceService.sourceSinkByLevel(filters);
+    }
+
+    @PostMapping("/source-by-where-main")
+    public List<ResourceWhereMainDTO> sourceByWhereMain(@RequestBody final SearchFilters filters) {
+        return resourceService.sourceByWhereMain(filters);
+    }
+
+    @GetMapping("/source-by-where-main")
+    public List<ResourceWhereMainDTO> sourceByWhereMain(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setCountryCode(countryCode);
+        filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return resourceService.sourceByWhereMain(filters);
+    }
+
+    @PostMapping("/sink-by-where-main")
+    public List<ResourceWhereMainDTO> sinkByWhereMain(@RequestBody final SearchFilters filters) {
+        return resourceService.sinkByWhereMain(filters);
+    }
+
+    @GetMapping("/sink-by-where-main")
+    public List<ResourceWhereMainDTO> sinkByWhereMain(
+            @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameVersion,
+            @RequestParam(required = false) final List<String> countryCode,
+            @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final Integer minLevel,
+            @RequestParam(required = false) final Integer maxLevel,
+            @RequestParam(required = false) final String fromDate,
+            @RequestParam(required = false) final String toDate) {
+        SearchFilters filters = new SearchFilters();
+        filters.setTerm(term);
+        filters.setGameVersion(gameVersion);
+        filters.setCountryCode(countryCode);
+        filters.setPlatform(platform);
+        filters.setMinLevel(minLevel);
+        filters.setMaxLevel(maxLevel);
+        filters.setFromDate(fromDate);
+        filters.setToDate(toDate);
+        return resourceService.sinkByWhereMain(filters);
     }
 
     @PostMapping("/generate")

@@ -2,13 +2,19 @@ package com.example.rest_service.search;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 public class SearchFilters {
     private String term;
+    @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
     private List<String> gameVersion;
+    @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
     private List<String> countryCode;
+    @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
     private List<String> platform;
     private String fromDate;
     private String toDate;
+    @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
     private List<String> placements;
     private Integer minLevel;
     private Integer maxLevel;
