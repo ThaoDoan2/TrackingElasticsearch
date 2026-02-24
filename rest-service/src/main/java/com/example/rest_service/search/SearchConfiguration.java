@@ -8,9 +8,11 @@ import org.springframework.context.annotation.Configuration;
 import com.example.rest_service.dto.GamePlayDTO;
 import com.example.rest_service.dto.IapDTO;
 import com.example.rest_service.dto.PersonDTO;
+import com.example.rest_service.dto.ResourceDTO;
 import com.example.rest_service.repository.gameplay.GamePlayDocument;
 import com.example.rest_service.repository.iap.IapDocument;
 import com.example.rest_service.repository.person.PersonDocument;
+import com.example.rest_service.repository.resource.ResourceDocument;
 import com.example.rest_service.service.converter.IConverter;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -36,6 +38,13 @@ public class SearchConfiguration {
     public ElasticsearchProxy<GamePlayDocument, GamePlayDTO> gameplayElasticsearchProxy(
             ElasticsearchClient client,
             List<IConverter<GamePlayDocument, GamePlayDTO>> converters) {
+        return new ElasticsearchProxy<>(client, converters);
+    }
+
+    @Bean
+    public ElasticsearchProxy<ResourceDocument, ResourceDTO> resourceElasticsearchProxy(
+            ElasticsearchClient client,
+            List<IConverter<ResourceDocument, ResourceDTO>> converters) {
         return new ElasticsearchProxy<>(client, converters);
     }
 }

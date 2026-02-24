@@ -1,0 +1,49 @@
+{
+    "properties": {
+        "accountCreatedDate": {
+            "type": "date"
+        },
+        "amount": {
+            "type": "long"
+        },
+        "country": {
+            "type": "keyword"
+        },
+        "date": {
+            "type": "date"
+        },
+        "eventType": {
+            "type": "keyword"
+        },
+        "gameId": {
+            "type": "keyword"
+        },
+        "gameVersion": {
+            "type": "keyword"
+        },
+        "highestLevel": {
+            "type": "long"
+        },
+        "itemId": {
+            "type": "int"
+        },
+        "itemName": {
+            "type": "keyword"
+        },
+        "loggedDay": {
+            "type": "long"
+        },
+        "placement": {
+            "type": "keyword"
+        },
+        "platform": {
+            "type": "keyword"
+        },
+        "subPlacement": {
+            "type": "keyword"
+        },
+        "userId": {
+            "type": "keyword"
+        }
+    }
+}
