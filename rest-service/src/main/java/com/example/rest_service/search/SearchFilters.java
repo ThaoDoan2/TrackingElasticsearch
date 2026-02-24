@@ -16,6 +16,10 @@ public class SearchFilters {
     private String toDate;
     @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
     private List<String> placements;
+    @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
+    private List<String> subPlacements;
+    @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
+    private List<String> itemNames;
     private Integer minLevel;
     private Integer maxLevel;
 
@@ -73,6 +77,22 @@ public class SearchFilters {
 
     public void setPlacements(List<String> placements) {
         this.placements = placements;
+    }
+
+    public List<String> getSubPlacements() {
+        return subPlacements;
+    }
+
+    public void setSubPlacements(List<String> subPlacements) {
+        this.subPlacements = subPlacements;
+    }
+
+    public List<String> getItemNames() {
+        return itemNames;
+    }
+
+    public void setItemNames(List<String> itemNames) {
+        this.itemNames = itemNames;
     }
 
     public Integer getMinLevel() {

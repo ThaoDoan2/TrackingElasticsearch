@@ -1,7 +1,6 @@
 package com.example.rest_service.service;
 
 import java.io.IOException;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -348,6 +347,9 @@ public class ResourceServiceImpl implements IResourceService {
         addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
         addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
         addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
+        addMultiValueExactFilter(filterQueries, "placement", filters.getPlacements());
+        addMultiValueExactFilter(filterQueries, "subPlacement", filters.getSubPlacements());
+        addMultiValueExactFilter(filterQueries, "itemName", filters.getItemNames());
         addMultiValueExactFilter(filterQueries, "eventType", eventTypes);
 
         if (filters.getMinLevel() != null || filters.getMaxLevel() != null) {

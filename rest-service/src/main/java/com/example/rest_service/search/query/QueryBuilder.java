@@ -38,6 +38,9 @@ public final class QueryBuilder {
             addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
             addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
             addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
+            addMultiValueExactFilter(filterQueries, "placement", filters.getPlacements());
+            addMultiValueExactFilter(filterQueries, "subPlacement", filters.getSubPlacements());
+            addMultiValueExactFilter(filterQueries, "itemName", filters.getItemNames());
             addLevelRangeFilter(filterQueries, filters);
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);
@@ -92,6 +95,9 @@ SearchRequest.Builder builder = new SearchRequest.Builder();
             addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
             addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
             addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
+            addMultiValueExactFilter(filterQueries, "placement", filters.getPlacements());
+            addMultiValueExactFilter(filterQueries, "subPlacement", filters.getSubPlacements());
+            addMultiValueExactFilter(filterQueries, "itemName", filters.getItemNames());
             addLevelRangeFilter(filterQueries, filters);
 
             final String fromDate = normalizeDate(filters.getFromDate(), false);

@@ -72,6 +72,9 @@ public class ResourceController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final List<String> subPlacements,
+            @RequestParam(required = false) final List<String> itemNames,
             @RequestParam(required = false) final Integer minLevel,
             @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
@@ -81,6 +84,9 @@ public class ResourceController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setSubPlacements(subPlacements);
+        filters.setItemNames(itemNames);
         filters.setMinLevel(minLevel);
         filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
@@ -99,6 +105,9 @@ public class ResourceController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final List<String> subPlacements,
+            @RequestParam(required = false) final List<String> itemNames,
             @RequestParam(required = false) final Integer minLevel,
             @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
@@ -108,6 +117,9 @@ public class ResourceController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setSubPlacements(subPlacements);
+        filters.setItemNames(itemNames);
         filters.setMinLevel(minLevel);
         filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
@@ -126,6 +138,9 @@ public class ResourceController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final List<String> subPlacements,
+            @RequestParam(required = false) final List<String> itemNames,
             @RequestParam(required = false) final Integer minLevel,
             @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
@@ -135,6 +150,9 @@ public class ResourceController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setSubPlacements(subPlacements);
+        filters.setItemNames(itemNames);
         filters.setMinLevel(minLevel);
         filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
@@ -153,6 +171,9 @@ public class ResourceController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final List<String> subPlacements,
+            @RequestParam(required = false) final List<String> itemNames,
             @RequestParam(required = false) final Integer minLevel,
             @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
@@ -162,6 +183,9 @@ public class ResourceController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setSubPlacements(subPlacements);
+        filters.setItemNames(itemNames);
         filters.setMinLevel(minLevel);
         filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
@@ -180,6 +204,9 @@ public class ResourceController {
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
+            @RequestParam(required = false) final List<String> placements,
+            @RequestParam(required = false) final List<String> subPlacements,
+            @RequestParam(required = false) final List<String> itemNames,
             @RequestParam(required = false) final Integer minLevel,
             @RequestParam(required = false) final Integer maxLevel,
             @RequestParam(required = false) final String fromDate,
@@ -189,6 +216,9 @@ public class ResourceController {
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
+        filters.setPlacements(placements);
+        filters.setSubPlacements(subPlacements);
+        filters.setItemNames(itemNames);
         filters.setMinLevel(minLevel);
         filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
