@@ -21,6 +21,7 @@ import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByDayPlace
 import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelDTO;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelPlacementDTO;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAdsFilterOptionsDTO;
+import com.example.rest_service.feature.rewardedads.repository.RewardedAdsDocument;
 import com.example.rest_service.search.SearchFilters;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -32,7 +33,6 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 @Service
 public class RewardedAdsServiceImpl implements IRewardedAdsService {
     private static final Logger LOG = LoggerFactory.getLogger(RewardedAdsServiceImpl.class);
-    private static final String INDEX = "rewarded_ads";
 
     private final ElasticsearchClient elasticsearchClient;
 
@@ -45,7 +45,7 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
         try {
             final Query query = buildRewardedAdsQuery(filters);
             SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                    .index(INDEX)
+                    .index(RewardedAdsDocument.INDEX)
                     .size(0)
                     .query(query)
                     .aggregations("by_date", a -> a
@@ -160,7 +160,7 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
             final boolean includeMissingUnknown)
             throws IOException {
         return elasticsearchClient.search(s -> s
-                .index(INDEX)
+                .index(RewardedAdsDocument.INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_level", a -> a
@@ -178,7 +178,7 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
             final boolean includeMissingUnknown)
             throws IOException {
         return elasticsearchClient.search(s -> s
-                .index(INDEX)
+                .index(RewardedAdsDocument.INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_level", a -> a
@@ -371,7 +371,7 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
 
     private List<String> executeDistinctTermsQuery(final String fieldName) throws IOException {
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index(INDEX)
+                .index(RewardedAdsDocument.INDEX)
                 .size(0)
                 .aggregations("values", a -> a.terms(t -> t.field(fieldName).size(1000))),
                 Void.class);
