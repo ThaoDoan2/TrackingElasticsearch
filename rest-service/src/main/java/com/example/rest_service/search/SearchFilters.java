@@ -12,6 +12,8 @@ public class SearchFilters {
     private List<String> countryCode;
     @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
     private List<String> platform;
+    @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
+    private List<String> gameIds;
     private String fromDate;
     private String toDate;
     @JsonDeserialize(using = CommaSeparatedStringOrArrayDeserializer.class)
@@ -57,6 +59,14 @@ public class SearchFilters {
 
     public String getFromDate() {
         return fromDate;
+    }
+
+    public List<String> getGameIds() {
+        return gameIds;
+    }
+
+    public void setGameIds(List<String> gameIds) {
+        this.gameIds = gameIds;
     }
 
     public void setFromDate(String fromDate) {

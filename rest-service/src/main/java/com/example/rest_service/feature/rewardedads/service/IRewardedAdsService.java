@@ -25,4 +25,6 @@ public interface IRewardedAdsService {
     List<String> getAllGameVersions();
 
     List<String> getAllPlatforms();
+
+    void initData();
 }

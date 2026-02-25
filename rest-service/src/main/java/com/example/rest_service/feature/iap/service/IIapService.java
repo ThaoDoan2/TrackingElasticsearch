@@ -38,4 +38,6 @@ public interface IIapService {
     List<String> getAllPlatforms();
 
     List<String> getAllGameVersions();
+
+    void initData();
 }

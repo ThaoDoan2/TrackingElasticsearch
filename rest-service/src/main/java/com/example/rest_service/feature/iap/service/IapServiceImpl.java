@@ -7,10 +7,12 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,8 @@ import com.example.rest_service.feature.iap.dto.IapPlacementRatioDTO;
 import com.example.rest_service.feature.iap.repository.IapDocument;
 import com.example.rest_service.feature.iap.repository.IapRepository;
 import com.example.rest_service.feature.iap.service.converter.IapDTOConverter;
+import com.example.rest_service.feature.rewardedads.repository.RewardedAdsDocument;
+import com.example.rest_service.feature.user.service.UserAccountService;
 import com.example.rest_service.search.ElasticsearchProxy;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.search.query.QueryType;
@@ -47,14 +51,18 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
     private final IapRepository repository;
     private final IapDTOConverter converter;
     private final ElasticsearchProxy<IapDocument, IapDTO> client;
+    private final UserAccountService userAccountService;
+
     public IapServiceImpl(IapRepository repository,
             IapDTOConverter converter,
             ElasticsearchProxy<IapDocument, IapDTO> client,
-            ElasticsearchClient elasticsearchClient) {
+            ElasticsearchClient elasticsearchClient,
+            UserAccountService userAccountService) {
         super(elasticsearchClient);
         this.repository = repository;
         this.converter = converter;
         this.client = client;
+        this.userAccountService = userAccountService;
     }
 
     @Override
@@ -69,6 +77,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
 
     @Override
     public List<IapDTO> search(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         return client.search(
                 filters,
                 new SearchMeta(List.of("userId", "productId", "transactionId"), INDEX, QueryType.MATCH),
@@ -77,6 +86,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
 
     @Override
     public IapChartResponse chart(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             return executeChartQuery(filters, "productId", "gameVersion");
         } catch (Exception error) {
@@ -87,6 +97,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
 
     @Override
     public List<IapChartCompactRowDTO> chartCompact(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             return executeCompactChartQuery(filters, "productId", "gameVersion");
         } catch (Exception error) {
@@ -97,6 +108,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
 
     @Override
     public List<IapDailyProductTotalDTO> totalPurchasePerDay(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             return executeTotalPurchasePerDayQuery(filters, "productId", "gameVersion");
         } catch (Exception error) {
@@ -107,6 +119,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
 
     @Override
     public List<IapPlacementRatioDTO> purchaseRatioByPlacement(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             return executePurchaseRatioByPlacementQuery(filters, "placement", "gameVersion");
         } catch (Exception error) {
@@ -283,7 +296,8 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
         return rows;
     }
 
-    private List<IapPlacementRatioDTO> executePurchaseRatioByPlacementQuery(SearchFilters filters, String placementField,
+    private List<IapPlacementRatioDTO> executePurchaseRatioByPlacementQuery(SearchFilters filters,
+            String placementField,
             String gameVersionField) throws IOException {
         final Query query = buildChartQuery(filters, gameVersionField);
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
@@ -328,6 +342,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
         final List<Query> shouldQueries = new ArrayList<>();
 
         addMultiValueExactFilter(filterQueries, gameVersionField, filters.getGameVersion());
+        addMultiValueExactFilter(filterQueries, "gameId", filters.getGameIds());
         addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
         addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
         if (filters.getMinLevel() != null || filters.getMaxLevel() != null) {
@@ -406,7 +421,11 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
-        return getDistinctFieldValuesWithKeywordFallback(LOG, INDEX, fieldName);
+        return getDistinctFieldValuesWithKeywordFallback(
+                LOG,
+                INDEX,
+                fieldName,
+                userAccountService.getCurrentUserGameScopeOrEmptyForAdmin());
     }
 
     private static String normalizeDate(final String rawDate, final boolean endOfDay) {
@@ -435,5 +454,46 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
         }
 
         return trimmed;
+    }
+
+    @Override
+    public void initData() {
+
+        String countries[] = { "US", "UK", "DE", "FR", "JP" };
+        String gameIds[] = { "com.higame.goods.sorting.match.triple.master",
+                "com.higame.brain.twist.tricky.puzzle" };
+
+        String placements[] = { "BattlePass", "Shop", "Offer", "Lose" };
+        String productIds[] = { "Starter", "BasicBundle", "BigBundle", "PremiumBundle", "EpicBundle",
+                "LegendaryBundle" };
+        float prices[] = { 0.99f, 4.99f, 9.99f, 19.99f, 49.99f, 99.99f };
+
+        for (int i = 0; i < 100; i++) {
+            int r = new Random().nextInt(100);
+            int r2 = new Random().nextInt(100);
+            IapDocument doc = new IapDocument();
+            doc.setUserId("user" + (r % 50));
+            doc.setGameId(gameIds[r2 % gameIds.length]);
+            doc.setEventType("Iap");
+            doc.setPlatform(r % 2 == 0 ? "Android" : "iOS");
+            doc.setCountry(countries[r % countries.length]);
+            doc.setGameVersion("1.0.0");
+            doc.setLoggedDay((long) r % 7);
+            Date now = new Date();
+            Date accountCreatedDate = new Date(now.getTime() - r * 86400 * 1000L);
+            doc.setAccountCreatedDate(accountCreatedDate);
+            Date recordDate = new Date(now.getTime() - (r % 7) * 86400 * 1000L);
+            doc.setDate(recordDate);
+
+            doc.setPlacement(placements[r % placements.length]);
+            doc.setProductId(productIds[r % productIds.length]);
+            doc.setTransactionId("transaction " + i);
+            doc.setPrice(prices[r % prices.length]);
+            doc.setCurrencyCode("USD");
+
+            repository.save(doc);
+        }
+
+        LOG.info("IAP Sample data initialized");
     }
 }

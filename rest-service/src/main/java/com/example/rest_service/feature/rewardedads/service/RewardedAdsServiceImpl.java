@@ -7,9 +7,11 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -20,8 +22,11 @@ import org.springframework.stereotype.Service;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByDayPlacementDTO;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelDTO;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelPlacementDTO;
+import com.example.rest_service.feature.gameplay.repository.GamePlayDocument;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAdsFilterOptionsDTO;
 import com.example.rest_service.feature.rewardedads.repository.RewardedAdsDocument;
+import com.example.rest_service.feature.rewardedads.repository.RewardedAdsRepository;
+import com.example.rest_service.feature.user.service.UserAccountService;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.service.support.AbstractElasticsearchAggregationService;
 
@@ -34,13 +39,21 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 @Service
 public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationService implements IRewardedAdsService {
     private static final Logger LOG = LoggerFactory.getLogger(RewardedAdsServiceImpl.class);
+    private final UserAccountService userAccountService;
+    private final RewardedAdsRepository repository;
 
-    public RewardedAdsServiceImpl(ElasticsearchClient elasticsearchClient) {
+    public RewardedAdsServiceImpl(
+            ElasticsearchClient elasticsearchClient,
+            UserAccountService userAccountService,
+            RewardedAdsRepository repository) {
         super(elasticsearchClient);
+        this.userAccountService = userAccountService;
+        this.repository = repository;
     }
 
     @Override
     public List<RewardedAmountByDayPlacementDTO> rewardedAmountPerDayGroupedByPlacement(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             final Query query = buildRewardedAdsQuery(filters);
             SearchResponse<Void> response = elasticsearchClient.search(s -> s
@@ -113,6 +126,7 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
 
     @Override
     public List<RewardedAmountByLevelDTO> rewardedAmountPerLevel(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             final Query query = buildRewardedAdsQuery(filters);
             SearchResponse<Void> response = executeAmountPerLevelQuery(query, "level", false);
@@ -134,6 +148,7 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
 
     @Override
     public List<RewardedAmountByLevelPlacementDTO> rewardedAmountPerLevelGroupedByPlacement(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             final Query query = buildRewardedAdsQuery(filters);
             SearchResponse<Void> response = executeAmountPerLevelPlacementQuery(query, "level", false);
@@ -269,6 +284,7 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
         final List<Query> shouldQueries = new ArrayList<>();
 
         addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
+        addMultiValueExactFilter(filterQueries, "gameId", filters.getGameIds());
         addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
         addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
         if (filters.getPlacements() != null && !filters.getPlacements().isEmpty()) {
@@ -353,7 +369,11 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
-        return getDistinctFieldValuesWithKeywordFallback(LOG, RewardedAdsDocument.INDEX, fieldName);
+        return getDistinctFieldValuesWithKeywordFallback(
+                LOG,
+                RewardedAdsDocument.INDEX,
+                fieldName,
+                userAccountService.getCurrentUserGameScopeOrEmptyForAdmin());
     }
 
     private static boolean hasText(final String value) {
@@ -386,5 +406,46 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
         }
 
         return trimmed;
+    }
+
+    @Override
+    public void initData() {
+        String countries[] = { "US", "UK", "DE", "FR", "JP" };
+        String gameIds[] = { "com.higame.goods.sorting.match.triple.master",
+                "com.higame.brain.twist.tricky.puzzle" };
+
+        String placements[] = { "BattlePass", "Rewarded", "DailyQuest", "Prepare", "CardCollection", "Shop" };
+        String subPlacements[] = { "Training", "Starter", "BasicBundle", "BigBundle" };
+
+        for (int i = 0; i < 100; i++) {
+            int r = new Random().nextInt(100);
+            int r2 = new Random().nextInt(100);
+            RewardedAdsDocument doc = new RewardedAdsDocument();
+            doc.setUserId("user" + (r % 50));
+            doc.setGameId(gameIds[r2 % gameIds.length]);
+            doc.setEventType("PlayLevel");
+            doc.setPlatform(r % 2 == 0 ? "Android" : "iOS");
+            doc.setCountry(countries[r % countries.length]);
+            doc.setGameVersion("1.0.0");
+            doc.setLoggedDay((long) r % 7);
+            Date now = new Date();
+            Date accountCreatedDate = new Date(now.getTime() - r * 86400 * 1000L);
+            doc.setAccountCreatedDate(accountCreatedDate);
+            Date recordDate = new Date(now.getTime() - (r % 7) * 86400 * 1000L);
+            doc.setDate(recordDate);
+
+            if (doc.getEventType().equals("Source")) {
+                doc.setPlacement(placements[r % placements.length]);
+                if (doc.getPlacement().equals("Shop")) {
+                    doc.setSubPlacement(subPlacements[r2 % subPlacements.length]);
+                }
+            } else {
+                doc.setPlacement(r2 % 2 == 0 ? "Prepare" : "InGame");
+            }
+
+            repository.save(doc);
+        }
+
+        LOG.info("Sample data initialized");
     }
 }

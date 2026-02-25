@@ -69,6 +69,7 @@ public class ResourceController {
     @GetMapping("/search")
     public List<ResourceDTO> search(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -80,7 +81,7 @@ public class ResourceController {
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         return resourceService.search(buildFilters(
-                term, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
+                term, gameIds, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
                 minLevel, maxLevel, fromDate, toDate));
     }
 
@@ -92,6 +93,7 @@ public class ResourceController {
     @GetMapping("/source-sink-by-date")
     public List<ResourceSourceSinkByDateDTO> sourceSinkByDate(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -103,7 +105,7 @@ public class ResourceController {
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         return resourceService.sourceSinkByDate(buildFilters(
-                term, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
+                term, gameIds, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
                 minLevel, maxLevel, fromDate, toDate));
     }
 
@@ -115,6 +117,7 @@ public class ResourceController {
     @GetMapping("/source-sink-by-level")
     public List<ResourceSourceSinkByLevelDTO> sourceSinkByLevel(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -126,7 +129,7 @@ public class ResourceController {
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         return resourceService.sourceSinkByLevel(buildFilters(
-                term, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
+                term, gameIds, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
                 minLevel, maxLevel, fromDate, toDate));
     }
 
@@ -138,6 +141,7 @@ public class ResourceController {
     @GetMapping("/source-by-where-main")
     public List<ResourceWhereMainDTO> sourceByWhereMain(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -149,7 +153,7 @@ public class ResourceController {
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         return resourceService.sourceByWhereMain(buildFilters(
-                term, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
+                term, gameIds, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
                 minLevel, maxLevel, fromDate, toDate));
     }
 
@@ -161,6 +165,7 @@ public class ResourceController {
     @GetMapping("/sink-by-where-main")
     public List<ResourceWhereMainDTO> sinkByWhereMain(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -172,12 +177,13 @@ public class ResourceController {
             @RequestParam(required = false) final String fromDate,
             @RequestParam(required = false) final String toDate) {
         return resourceService.sinkByWhereMain(buildFilters(
-                term, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
+                term, gameIds, gameVersion, countryCode, platform, placements, subPlacements, itemNames,
                 minLevel, maxLevel, fromDate, toDate));
     }
 
     private static SearchFilters buildFilters(
             final String term,
+            final List<String> gameIds,
             final List<String> gameVersion,
             final List<String> countryCode,
             final List<String> platform,
@@ -190,6 +196,7 @@ public class ResourceController {
             final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);

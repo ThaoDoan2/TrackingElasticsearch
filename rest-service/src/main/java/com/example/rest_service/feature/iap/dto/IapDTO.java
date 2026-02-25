@@ -1,5 +1,7 @@
 package com.example.rest_service.feature.iap.dto;
 
+import java.util.Date;
+
 import com.example.rest_service.dto.BaseDTO;
 
 public class IapDTO extends BaseDTO {
@@ -14,8 +16,8 @@ public class IapDTO extends BaseDTO {
     private String gameVersion;
     private Long level;
     private Long loggedDay;
-    private String accountCreatedDate;
-    private String date;
+    private Date accountCreatedDate;
+    private Date date;
     private String productId;
     private String transactionId;
     private String orderId;
@@ -105,19 +107,19 @@ public class IapDTO extends BaseDTO {
         this.loggedDay = loggedDay;
     }
 
-    public String getAccountCreatedDate() {
+    public Date getAccountCreatedDate() {
         return accountCreatedDate;
     }
 
-    public void setAccountCreatedDate(String accountCreatedDate) {
+    public void setAccountCreatedDate(Date accountCreatedDate) {
         this.accountCreatedDate = accountCreatedDate;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

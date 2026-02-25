@@ -1,0 +1,19 @@
+{
+    "properties": {
+        "username": {
+            "type": "keyword"
+        },
+        "passwordHash": {
+            "type": "keyword"
+        },
+        "role": {
+            "type": "keyword"
+        },
+        "gameIds": {
+            "type": "keyword"
+        },
+        "enabled": {
+            "type": "boolean"
+        }
+    }
+}

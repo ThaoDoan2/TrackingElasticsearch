@@ -23,6 +23,7 @@ import com.example.rest_service.feature.resource.dto.ResourceSourceSinkByLevelDT
 import com.example.rest_service.feature.resource.dto.ResourceWhereMainDTO;
 import com.example.rest_service.feature.resource.repository.ResourceDocument;
 import com.example.rest_service.feature.resource.repository.ResourceRepository;
+import com.example.rest_service.feature.user.service.UserAccountService;
 import com.example.rest_service.search.ElasticsearchProxy;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.search.query.QueryType;
@@ -51,14 +52,17 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
     private final ResourceRepository repository;
     private final ResourceDTOConverter converter;
     private final ElasticsearchProxy<ResourceDocument, ResourceDTO> client;
+    private final UserAccountService userAccountService;
     public ResourceServiceImpl(ResourceRepository repository,
             ResourceDTOConverter converter,
             ElasticsearchProxy<ResourceDocument, ResourceDTO> client,
-            ElasticsearchClient elasticsearchClient) {
+            ElasticsearchClient elasticsearchClient,
+            UserAccountService userAccountService) {
         super(elasticsearchClient);
         this.repository = repository;
         this.converter = converter;
         this.client = client;
+        this.userAccountService = userAccountService;
     }
 
     @Override
@@ -73,6 +77,7 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<ResourceDTO> search(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         return client.search(
                 filters,
                 new SearchMeta(List.of("userId", "gameId", "eventType", "itemName"), "resource", QueryType.MATCH),
@@ -81,6 +86,7 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<ResourceSourceSinkByDateDTO> sourceSinkByDate(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             final Query query = buildResourceChartQuery(filters, SOURCE_SINK_TYPES);
             SearchResponse<Void> response = elasticsearchClient.search(s -> s
@@ -131,6 +137,7 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<ResourceSourceSinkByLevelDTO> sourceSinkByLevel(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             final Query query = buildResourceChartQuery(filters, SOURCE_SINK_TYPES);
             SearchResponse<Void> response = elasticsearchClient.search(s -> s
@@ -203,11 +210,13 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<ResourceWhereMainDTO> sourceByWhereMain(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         return amountByWhereMain(filters, SOURCE_TYPES);
     }
 
     @Override
     public List<ResourceWhereMainDTO> sinkByWhereMain(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         return amountByWhereMain(filters, SINK_TYPES);
     }
 
@@ -347,6 +356,7 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
         final List<Query> shouldQueries = new ArrayList<>();
 
         addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
+        addMultiValueExactFilter(filterQueries, "gameId", filters.getGameIds());
         addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
         addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
         addMultiValueExactFilter(filterQueries, "placement", filters.getPlacements());
@@ -493,6 +503,10 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
-        return getDistinctFieldValuesWithKeywordFallback(LOG, INDEX, fieldName);
+        return getDistinctFieldValuesWithKeywordFallback(
+                LOG,
+                INDEX,
+                fieldName,
+                userAccountService.getCurrentUserGameScopeOrEmptyForAdmin());
     }
 }

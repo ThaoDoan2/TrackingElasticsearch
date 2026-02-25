@@ -36,6 +36,7 @@ public final class QueryBuilder {
             }
 
             addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
+            addMultiValueExactFilter(filterQueries, "gameId", filters.getGameIds());
             addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
             addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
             addMultiValueExactFilter(filterQueries, "placement", filters.getPlacements());

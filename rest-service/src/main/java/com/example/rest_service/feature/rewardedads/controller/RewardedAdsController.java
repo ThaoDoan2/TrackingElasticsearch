@@ -60,6 +60,7 @@ public class RewardedAdsController {
     @GetMapping("/amount-by-date-placement")
     public List<RewardedAmountByDayPlacementDTO> rewardedAmountPerDayGroupedByPlacement(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -70,6 +71,7 @@ public class RewardedAdsController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -89,6 +91,7 @@ public class RewardedAdsController {
     @GetMapping("/amount-by-level")
     public List<RewardedAmountByLevelDTO> rewardedAmountPerLevel(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -99,6 +102,7 @@ public class RewardedAdsController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -119,6 +123,7 @@ public class RewardedAdsController {
     @GetMapping("/amount-by-level-placement")
     public List<RewardedAmountByLevelPlacementDTO> rewardedAmountPerLevelGroupedByPlacement(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -129,6 +134,7 @@ public class RewardedAdsController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -138,5 +144,10 @@ public class RewardedAdsController {
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return rewardedAdsService.rewardedAmountPerLevelGroupedByPlacement(filters);
+    }
+
+    @PostMapping("/generate")
+    public void generateData() {
+        rewardedAdsService.initData();
     }
 }

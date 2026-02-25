@@ -75,6 +75,7 @@ public class IapController {
     @GetMapping("/search")
     public List<IapDTO> search(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -84,6 +85,7 @@ public class IapController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -102,6 +104,7 @@ public class IapController {
     @GetMapping("/chart")
     public IapChartResponse chart(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -111,6 +114,7 @@ public class IapController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -129,6 +133,7 @@ public class IapController {
     @GetMapping("/chart/compact")
     public List<IapChartCompactRowDTO> chartCompact(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -140,6 +145,7 @@ public class IapController {
                 LOG.info("Received request for chartCompact with term={}, gameVersion={}, countryCode={}, platform={}, fromDate={}, toDate={}", term, gameVersion, countryCode, platform, fromDate, toDate);
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -158,6 +164,7 @@ public class IapController {
     @GetMapping("/revenue-by-date")
     public List<IapDailyProductTotalDTO> totalPurchasePerDay(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -167,6 +174,7 @@ public class IapController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -185,6 +193,7 @@ public class IapController {
     @GetMapping("/ratio/placement")
     public List<IapPlacementRatioDTO> purchaseRatioByPlacement(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -194,6 +203,7 @@ public class IapController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -202,6 +212,11 @@ public class IapController {
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
         return iapService.purchaseRatioByPlacement(filters);
+    }
+
+    @PostMapping("generate")
+    public void generateData() {
+        iapService.initData();
     }
 
 }

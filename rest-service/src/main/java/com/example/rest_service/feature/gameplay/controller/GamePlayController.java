@@ -54,6 +54,7 @@ public class GamePlayController {
     @GetMapping("/search")
     public List<GamePlayDTO> search(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -63,6 +64,7 @@ public class GamePlayController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -81,6 +83,7 @@ public class GamePlayController {
     @GetMapping("/user-win")
     public List<GamePlayWinByLevelDTO> totalWinsByLevel(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -90,6 +93,7 @@ public class GamePlayController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -108,6 +112,7 @@ public class GamePlayController {
     @GetMapping("/user-start")
     public List<GamePlayStartByLevelDTO> totalStartsByLevel(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -117,6 +122,7 @@ public class GamePlayController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);
@@ -135,6 +141,7 @@ public class GamePlayController {
     @GetMapping("/user-lose")
     public List<GamePlayLoseByLevelDTO> totalLosesByLevel(
             @RequestParam(required = false) final String term,
+            @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
             @RequestParam(required = false) final List<String> countryCode,
             @RequestParam(required = false) final List<String> platform,
@@ -144,6 +151,7 @@ public class GamePlayController {
             @RequestParam(required = false) final String toDate) {
         SearchFilters filters = new SearchFilters();
         filters.setTerm(term);
+        filters.setGameIds(gameIds);
         filters.setGameVersion(gameVersion);
         filters.setCountryCode(countryCode);
         filters.setPlatform(platform);

@@ -42,7 +42,9 @@ public class IndexService {
         }
 
         for (final IndexInfo indexInfo : indexInformation) {
-            delete(indexInfo);
+            if (!"users".equals(indexInfo.name())) {
+                delete(indexInfo);
+            }
             create(indexInfo);
         }
     }
@@ -50,6 +52,11 @@ public class IndexService {
     private void create(IndexInfo indexInfo) {
         LOG.info("Creating index {}", indexInfo.name());
         try {
+            final BooleanResponse exist = client.indices().exists(r -> r.index(indexInfo.name()));
+            if (exist.value()) {
+                LOG.info("Index {} already exists. Skipping creation.", indexInfo.name());
+                return;
+            }
             client.indices().create(r -> r.index(indexInfo.name())
                     .settings(s -> s.withJson(getAsInputStream("static/setting.json")))
                     .mappings(t -> t.withJson(getAsInputStream(indexInfo.mappingPath()))));

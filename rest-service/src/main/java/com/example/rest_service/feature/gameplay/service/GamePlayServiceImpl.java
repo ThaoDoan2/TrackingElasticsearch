@@ -24,6 +24,7 @@ import com.example.rest_service.feature.gameplay.dto.GamePlayWinByLevelDTO;
 import com.example.rest_service.feature.gameplay.repository.GamePlayDocument;
 import com.example.rest_service.feature.gameplay.repository.GamePlayRepository;
 import com.example.rest_service.feature.gameplay.service.converter.GamePlayDTOConverter;
+import com.example.rest_service.feature.user.service.UserAccountService;
 import com.example.rest_service.search.ElasticsearchProxy;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.search.query.QueryType;
@@ -45,14 +46,17 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
     private final GamePlayRepository repository;
     private final GamePlayDTOConverter converter;
     private final ElasticsearchProxy<GamePlayDocument, GamePlayDTO> client;
+    private final UserAccountService userAccountService;
     public GamePlayServiceImpl(GamePlayRepository repository,
             GamePlayDTOConverter converter,
             ElasticsearchProxy<GamePlayDocument, GamePlayDTO> client,
-            ElasticsearchClient elasticsearchClient) {
+            ElasticsearchClient elasticsearchClient,
+            UserAccountService userAccountService) {
         super(elasticsearchClient);
         this.repository = repository;
         this.converter = converter;
         this.client = client;
+        this.userAccountService = userAccountService;
     }
 
     @Override
@@ -67,6 +71,7 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<GamePlayDTO> search(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         return client.search(
                 filters,
                 new SearchMeta(List.of("userId", "gameId", "eventType"), INDEX, QueryType.MATCH),
@@ -75,6 +80,7 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<GamePlayWinByLevelDTO> totalWinsByLevel(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             return executeWinsByLevelAggregation(filters);
         } catch (Exception error) {
@@ -85,6 +91,7 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<GamePlayStartByLevelDTO> totalStartsByLevel(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             return executeStartsByLevelAggregation(filters);
         } catch (Exception error) {
@@ -95,6 +102,7 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
 
     @Override
     public List<GamePlayLoseByLevelDTO> totalLosesByLevel(SearchFilters filters) {
+        userAccountService.applyGameScope(filters);
         try {
             return executeLosesByLevelAggregation(filters);
         } catch (Exception error) {
@@ -342,6 +350,7 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
         final List<Query> shouldQueries = new ArrayList<>();
 
         addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
+        addMultiValueExactFilter(filterQueries, "gameId", filters.getGameIds());
         addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
         addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
         addMultiValueExactFilter(filterQueries, "status", statuses);
@@ -517,6 +526,10 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
-        return getDistinctFieldValuesWithKeywordFallback(LOG, INDEX, fieldName);
+        return getDistinctFieldValuesWithKeywordFallback(
+                LOG,
+                INDEX,
+                fieldName,
+                userAccountService.getCurrentUserGameScopeOrEmptyForAdmin());
     }
 }
