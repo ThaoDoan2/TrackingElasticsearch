@@ -1,0 +1,16 @@
+{
+    "properties": {
+        "gameId": {
+            "type": "keyword"
+        },
+        "name": {
+            "type": "keyword"
+        },
+        "apiKey": {
+            "type": "keyword"
+        },
+        "enabled": {
+            "type": "boolean"
+        }
+    }
+}
