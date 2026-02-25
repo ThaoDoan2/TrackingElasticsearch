@@ -23,11 +23,12 @@ import com.example.rest_service.feature.gameplay.dto.GamePlayStartByLevelDTO;
 import com.example.rest_service.feature.gameplay.dto.GamePlayWinByLevelDTO;
 import com.example.rest_service.feature.gameplay.repository.GamePlayDocument;
 import com.example.rest_service.feature.gameplay.repository.GamePlayRepository;
+import com.example.rest_service.feature.gameplay.service.converter.GamePlayDTOConverter;
 import com.example.rest_service.search.ElasticsearchProxy;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.search.query.QueryType;
 import com.example.rest_service.search.query.SearchMeta;
-import com.example.rest_service.feature.gameplay.service.converter.GamePlayDTOConverter;
+import com.example.rest_service.service.support.AbstractElasticsearchAggregationService;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.SortOrder;
@@ -37,22 +38,21 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.util.NamedValue;
 
 @Service
-public class GamePlayServiceImpl implements IGamePlayService {
+public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService implements IGamePlayService {
     private static final Logger LOG = LoggerFactory.getLogger(GamePlayServiceImpl.class);
+    private static final String INDEX = "gameplay";
 
     private final GamePlayRepository repository;
     private final GamePlayDTOConverter converter;
     private final ElasticsearchProxy<GamePlayDocument, GamePlayDTO> client;
-    private final ElasticsearchClient elasticsearchClient;
-
     public GamePlayServiceImpl(GamePlayRepository repository,
             GamePlayDTOConverter converter,
             ElasticsearchProxy<GamePlayDocument, GamePlayDTO> client,
             ElasticsearchClient elasticsearchClient) {
+        super(elasticsearchClient);
         this.repository = repository;
         this.converter = converter;
         this.client = client;
-        this.elasticsearchClient = elasticsearchClient;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class GamePlayServiceImpl implements IGamePlayService {
     public List<GamePlayDTO> search(SearchFilters filters) {
         return client.search(
                 filters,
-                new SearchMeta(List.of("userId", "gameId", "eventType"), "gameplay", QueryType.MATCH),
+                new SearchMeta(List.of("userId", "gameId", "eventType"), INDEX, QueryType.MATCH),
                 GamePlayDocument.class);
     }
 
@@ -103,10 +103,25 @@ public class GamePlayServiceImpl implements IGamePlayService {
         }
     }
 
+    @Override
+    public List<String> getAllCountries() {
+        return getDistinctFieldValues("country");
+    }
+
+    @Override
+    public List<String> getAllGameVersions() {
+        return getDistinctFieldValues("gameVersion");
+    }
+
+    @Override
+    public List<String> getAllPlatforms() {
+        return getDistinctFieldValues("platform");
+    }
+
     private List<GamePlayWinByLevelDTO> executeWinsByLevelAggregation(SearchFilters filters) throws Exception {
         final Query query = buildWinsChartQuery(filters);
         final SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index("gameplay")
+                .index(INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_level", a -> a
@@ -183,7 +198,7 @@ public class GamePlayServiceImpl implements IGamePlayService {
     private List<GamePlayStartByLevelDTO> executeStartsByLevelAggregation(SearchFilters filters) throws Exception {
         final Query query = buildStatusChartQuery(filters, List.of("start", "Start", "START"));
         final SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index("gameplay")
+                .index(INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_level", a -> a
@@ -253,7 +268,7 @@ public class GamePlayServiceImpl implements IGamePlayService {
     private List<GamePlayLoseByLevelDTO> executeLosesByLevelAggregation(SearchFilters filters) throws Exception {
         final Query query = buildStatusChartQuery(filters, List.of("lose", "Lose", "LOSE"));
         final SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index("gameplay")
+                .index(INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_level", a -> a
@@ -499,5 +514,9 @@ public class GamePlayServiceImpl implements IGamePlayService {
         }
 
         return trimmed;
+    }
+
+    private List<String> getDistinctFieldValues(final String fieldName) {
+        return getDistinctFieldValuesWithKeywordFallback(LOG, INDEX, fieldName);
     }
 }

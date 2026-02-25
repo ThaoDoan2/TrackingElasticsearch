@@ -23,6 +23,7 @@ import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelPla
 import com.example.rest_service.feature.rewardedads.dto.RewardedAdsFilterOptionsDTO;
 import com.example.rest_service.feature.rewardedads.repository.RewardedAdsDocument;
 import com.example.rest_service.search.SearchFilters;
+import com.example.rest_service.service.support.AbstractElasticsearchAggregationService;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
@@ -31,13 +32,11 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 
 @Service
-public class RewardedAdsServiceImpl implements IRewardedAdsService {
+public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationService implements IRewardedAdsService {
     private static final Logger LOG = LoggerFactory.getLogger(RewardedAdsServiceImpl.class);
 
-    private final ElasticsearchClient elasticsearchClient;
-
     public RewardedAdsServiceImpl(ElasticsearchClient elasticsearchClient) {
-        this.elasticsearchClient = elasticsearchClient;
+        super(elasticsearchClient);
     }
 
     @Override
@@ -354,39 +353,7 @@ public class RewardedAdsServiceImpl implements IRewardedAdsService {
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
-        try {
-            return executeDistinctTermsQuery(fieldName);
-        } catch (Exception baseFieldError) {
-            LOG.warn("Distinct query for field {} failed, fallback to {}.keyword. Root cause: {}", fieldName,
-                    fieldName + ".keyword", baseFieldError.getMessage());
-            try {
-                return executeDistinctTermsQuery(fieldName + ".keyword");
-            } catch (Exception keywordFieldError) {
-                LOG.error("Distinct query for field {} failed. Root cause: {}", fieldName,
-                        keywordFieldError.getMessage(), keywordFieldError);
-                return List.of();
-            }
-        }
-    }
-
-    private List<String> executeDistinctTermsQuery(final String fieldName) throws IOException {
-        SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index(RewardedAdsDocument.INDEX)
-                .size(0)
-                .aggregations("values", a -> a.terms(t -> t.field(fieldName).size(1000))),
-                Void.class);
-
-        var values = response.aggregations().get("values");
-        if (values == null || !values.isSterms()) {
-            return List.of();
-        }
-
-        // TreeSet keeps values unique and sorted for stable filter dropdowns.
-        return new ArrayList<>(values.sterms().buckets().array().stream()
-                .map(bucket -> bucket.key().stringValue())
-                .filter(RewardedAdsServiceImpl::hasText)
-                .map(String::trim)
-                .collect(Collectors.toCollection(TreeSet::new)));
+        return getDistinctFieldValuesWithKeywordFallback(LOG, RewardedAdsDocument.INDEX, fieldName);
     }
 
     private static boolean hasText(final String value) {

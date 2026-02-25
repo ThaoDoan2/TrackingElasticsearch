@@ -28,6 +28,7 @@ import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.search.query.QueryType;
 import com.example.rest_service.search.query.SearchMeta;
 import com.example.rest_service.feature.resource.service.converter.ResourceDTOConverter;
+import com.example.rest_service.service.support.AbstractElasticsearchAggregationService;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.SortOrder;
@@ -38,7 +39,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.util.NamedValue;
 
 @Service
-public class ResourceServiceImpl implements IResourceService {
+public class ResourceServiceImpl extends AbstractElasticsearchAggregationService implements IResourceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResourceServiceImpl.class);
     private static final String INDEX = "resource";
@@ -50,16 +51,14 @@ public class ResourceServiceImpl implements IResourceService {
     private final ResourceRepository repository;
     private final ResourceDTOConverter converter;
     private final ElasticsearchProxy<ResourceDocument, ResourceDTO> client;
-    private final ElasticsearchClient elasticsearchClient;
-
     public ResourceServiceImpl(ResourceRepository repository,
             ResourceDTOConverter converter,
             ElasticsearchProxy<ResourceDocument, ResourceDTO> client,
             ElasticsearchClient elasticsearchClient) {
+        super(elasticsearchClient);
         this.repository = repository;
         this.converter = converter;
         this.client = client;
-        this.elasticsearchClient = elasticsearchClient;
     }
 
     @Override
@@ -494,38 +493,6 @@ public class ResourceServiceImpl implements IResourceService {
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
-        try {
-            return executeDistinctTermsQuery(fieldName);
-        } catch (Exception baseFieldError) {
-            LOG.warn("Distinct query for field {} failed, fallback to {}.keyword. Root cause: {}", fieldName,
-                    fieldName + ".keyword", baseFieldError.getMessage());
-            try {
-                return executeDistinctTermsQuery(fieldName + ".keyword");
-            } catch (Exception keywordFieldError) {
-                LOG.error("Distinct query for field {} failed. Root cause: {}", fieldName,
-                        keywordFieldError.getMessage(), keywordFieldError);
-                return List.of();
-            }
-        }
-    }
-
-    private List<String> executeDistinctTermsQuery(final String fieldName) throws IOException {
-        SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index(INDEX)
-                .size(0)
-                .aggregations("values", a -> a.terms(t -> t.field(fieldName).size(1000))),
-                Void.class);
-
-        var values = response.aggregations().get("values");
-        if (values == null || !values.isSterms()) {
-            return List.of();
-        }
-
-        // TreeSet keeps values unique and sorted for stable filter dropdowns.
-        return new ArrayList<>(values.sterms().buckets().array().stream()
-                .map(bucket -> bucket.key().stringValue())
-                .filter(ResourceServiceImpl::hasText)
-                .map(String::trim)
-                .collect(Collectors.toCollection(TreeSet::new)));
+        return getDistinctFieldValuesWithKeywordFallback(LOG, INDEX, fieldName);
     }
 }

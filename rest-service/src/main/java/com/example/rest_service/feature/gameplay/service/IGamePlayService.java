@@ -23,5 +23,11 @@ public interface IGamePlayService {
 
     List<GamePlayLoseByLevelDTO> totalLosesByLevel(SearchFilters filters);
 
+    List<String> getAllCountries();
+
+    List<String> getAllGameVersions();
+
+    List<String> getAllPlatforms();
+
     void initData();
 }

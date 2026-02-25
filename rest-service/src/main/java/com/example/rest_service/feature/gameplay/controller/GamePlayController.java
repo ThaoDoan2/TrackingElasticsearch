@@ -36,6 +36,21 @@ public class GamePlayController {
         return gamePlayService.search(filters);
     }
 
+    @GetMapping("/countries")
+    public List<String> getAllCountries() {
+        return gamePlayService.getAllCountries();
+    }
+
+    @GetMapping("/game-versions")
+    public List<String> getAllGameVersions() {
+        return gamePlayService.getAllGameVersions();
+    }
+
+    @GetMapping("/platforms")
+    public List<String> getAllPlatforms() {
+        return gamePlayService.getAllPlatforms();
+    }
+
     @GetMapping("/search")
     public List<GamePlayDTO> search(
             @RequestParam(required = false) final String term,

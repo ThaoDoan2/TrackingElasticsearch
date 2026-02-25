@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -28,11 +27,12 @@ import com.example.rest_service.feature.iap.dto.IapFilterOptionsDTO;
 import com.example.rest_service.feature.iap.dto.IapPlacementRatioDTO;
 import com.example.rest_service.feature.iap.repository.IapDocument;
 import com.example.rest_service.feature.iap.repository.IapRepository;
+import com.example.rest_service.feature.iap.service.converter.IapDTOConverter;
 import com.example.rest_service.search.ElasticsearchProxy;
 import com.example.rest_service.search.SearchFilters;
 import com.example.rest_service.search.query.QueryType;
 import com.example.rest_service.search.query.SearchMeta;
-import com.example.rest_service.feature.iap.service.converter.IapDTOConverter;
+import com.example.rest_service.service.support.AbstractElasticsearchAggregationService;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
@@ -40,22 +40,21 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 
 @Service
-public class IapServiceImpl implements IIapService {
+public class IapServiceImpl extends AbstractElasticsearchAggregationService implements IIapService {
     private static final Logger LOG = LoggerFactory.getLogger(IapServiceImpl.class);
+    private static final String INDEX = "iap";
 
     private final IapRepository repository;
     private final IapDTOConverter converter;
     private final ElasticsearchProxy<IapDocument, IapDTO> client;
-    private final ElasticsearchClient elasticsearchClient;
-
     public IapServiceImpl(IapRepository repository,
             IapDTOConverter converter,
             ElasticsearchProxy<IapDocument, IapDTO> client,
             ElasticsearchClient elasticsearchClient) {
+        super(elasticsearchClient);
         this.repository = repository;
         this.converter = converter;
         this.client = client;
-        this.elasticsearchClient = elasticsearchClient;
     }
 
     @Override
@@ -72,7 +71,7 @@ public class IapServiceImpl implements IIapService {
     public List<IapDTO> search(SearchFilters filters) {
         return client.search(
                 filters,
-                new SearchMeta(List.of("userId", "productId", "transactionId"), "iap", QueryType.MATCH),
+                new SearchMeta(List.of("userId", "productId", "transactionId"), INDEX, QueryType.MATCH),
                 IapDocument.class);
     }
 
@@ -224,7 +223,7 @@ public class IapServiceImpl implements IIapService {
             String gameVersionField) throws IOException {
         final Query query = buildChartQuery(filters, gameVersionField);
         return elasticsearchClient.search(s -> s
-                .index("iap")
+                .index(INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_date", a -> a
@@ -242,7 +241,7 @@ public class IapServiceImpl implements IIapService {
             String gameVersionField) throws IOException {
         final Query query = buildChartQuery(filters, gameVersionField);
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index("iap")
+                .index(INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_date", a -> a
@@ -288,7 +287,7 @@ public class IapServiceImpl implements IIapService {
             String gameVersionField) throws IOException {
         final Query query = buildChartQuery(filters, gameVersionField);
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index("iap")
+                .index(INDEX)
                 .size(0)
                 .query(query)
                 .aggregations("by_placement", a -> a
@@ -407,38 +406,7 @@ public class IapServiceImpl implements IIapService {
     }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
-        try {
-            return executeDistinctTermsQuery(fieldName);
-        } catch (Exception baseFieldError) {
-            LOG.warn("Distinct query for field {} failed, fallback to {}.keyword. Root cause: {}", fieldName,
-                    fieldName + ".keyword", baseFieldError.getMessage());
-            try {
-                return executeDistinctTermsQuery(fieldName + ".keyword");
-            } catch (Exception keywordFieldError) {
-                LOG.error("Distinct query for field {} failed. Root cause: {}", fieldName,
-                        keywordFieldError.getMessage(), keywordFieldError);
-                return List.of();
-            }
-        }
-    }
-
-    private List<String> executeDistinctTermsQuery(final String fieldName) throws IOException {
-        SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                .index("iap")
-                .size(0)
-                .aggregations("values", a -> a.terms(t -> t.field(fieldName).size(1000))),
-                Void.class);
-
-        var values = response.aggregations().get("values");
-        if (values == null || !values.isSterms()) {
-            return List.of();
-        }
-
-        return new ArrayList<>(values.sterms().buckets().array().stream()
-                .map(bucket -> bucket.key().stringValue())
-                .filter(IapServiceImpl::hasText)
-                .map(String::trim)
-                .collect(Collectors.toCollection(TreeSet::new)));
+        return getDistinctFieldValuesWithKeywordFallback(LOG, INDEX, fieldName);
     }
 
     private static String normalizeDate(final String rawDate, final boolean endOfDay) {
