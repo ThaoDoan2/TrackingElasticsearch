@@ -20,9 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByDayPlacementDTO;
-import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelDTO;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAmountByLevelPlacementDTO;
-import com.example.rest_service.feature.gameplay.repository.GamePlayDocument;
 import com.example.rest_service.feature.rewardedads.dto.RewardedAdsFilterOptionsDTO;
 import com.example.rest_service.feature.rewardedads.repository.RewardedAdsDocument;
 import com.example.rest_service.feature.rewardedads.repository.RewardedAdsRepository;
@@ -125,28 +123,6 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
     }
 
     @Override
-    public List<RewardedAmountByLevelDTO> rewardedAmountPerLevel(SearchFilters filters) {
-        userAccountService.applyGameScope(filters);
-        try {
-            final Query query = buildRewardedAdsQuery(filters);
-            SearchResponse<Void> response = executeAmountPerLevelQuery(query, "level", false);
-            return mapAmountPerLevelResponse(response);
-        } catch (Exception levelError) {
-            LOG.warn("Rewarded amount per level query with level failed, fallback to level.keyword. Root cause: {}",
-                    levelError.getMessage());
-            try {
-                final Query query = buildRewardedAdsQuery(filters);
-                SearchResponse<Void> response = executeAmountPerLevelQuery(query, "level.keyword", true);
-                return mapAmountPerLevelResponse(response);
-            } catch (Exception fallbackError) {
-                LOG.error("Rewarded amount per level query failed. Root cause: {}", fallbackError.getMessage(),
-                        fallbackError);
-                return List.of();
-            }
-        }
-    }
-
-    @Override
     public List<RewardedAmountByLevelPlacementDTO> rewardedAmountPerLevelGroupedByPlacement(SearchFilters filters) {
         userAccountService.applyGameScope(filters);
         try {
@@ -170,24 +146,6 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
         }
     }
 
-    private SearchResponse<Void> executeAmountPerLevelQuery(final Query query, final String levelField,
-            final boolean includeMissingUnknown)
-            throws IOException {
-        return elasticsearchClient.search(s -> s
-                .index(RewardedAdsDocument.INDEX)
-                .size(0)
-                .query(query)
-                .aggregations("by_level", a -> a
-                        .terms(t -> {
-                            t.field(levelField).size(1000);
-                            if (includeMissingUnknown) {
-                                t.missing("UNKNOWN");
-                            }
-                            return t;
-                        })),
-                Void.class);
-    }
-
     private SearchResponse<Void> executeAmountPerLevelPlacementQuery(final Query query, final String levelField,
             final boolean includeMissingUnknown)
             throws IOException {
@@ -205,29 +163,6 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
                         })
                         .aggregations("by_placement", sub -> sub.terms(t -> t.field("placement").size(50)))),
                 Void.class);
-    }
-
-    private List<RewardedAmountByLevelDTO> mapAmountPerLevelResponse(SearchResponse<Void> response) {
-        List<RewardedAmountByLevelDTO> rows = new ArrayList<>();
-        var byLevel = response.aggregations().get("by_level");
-        if (byLevel == null) {
-            return rows;
-        }
-
-        if (byLevel.isSterms()) {
-            for (var levelBucket : byLevel.sterms().buckets().array()) {
-                rows.add(new RewardedAmountByLevelDTO(levelBucket.key().stringValue(), levelBucket.docCount()));
-            }
-            return rows;
-        }
-
-        if (byLevel.isLterms()) {
-            for (var levelBucket : byLevel.lterms().buckets().array()) {
-                rows.add(new RewardedAmountByLevelDTO(String.valueOf(levelBucket.key()), levelBucket.docCount()));
-            }
-        }
-
-        return rows;
     }
 
     private List<RewardedAmountByLevelPlacementDTO> mapAmountPerLevelPlacementResponse(SearchResponse<Void> response) {
@@ -357,16 +292,6 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
         }
     }
 
-    private static List<String> normalizeValues(final List<String> values) {
-        if (values == null || values.isEmpty()) {
-            return List.of();
-        }
-        return values.stream()
-                .filter(RewardedAdsServiceImpl::hasText)
-                .map(String::trim)
-                .distinct()
-                .collect(Collectors.toList());
-    }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
         return getDistinctFieldValuesWithKeywordFallback(
@@ -374,38 +299,6 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
                 RewardedAdsDocument.INDEX,
                 fieldName,
                 userAccountService.getCurrentUserGameScopeOrEmptyForAdmin());
-    }
-
-    private static boolean hasText(final String value) {
-        return value != null && !value.isBlank();
-    }
-
-    private static String normalizeDate(final String rawDate, final boolean endOfDay) {
-        if (!hasText(rawDate)) {
-            return null;
-        }
-
-        final String trimmed = rawDate.trim();
-        try {
-            Instant.parse(trimmed);
-            return trimmed;
-        } catch (DateTimeParseException ignored) {
-        }
-
-        for (DateTimeFormatter formatter : List.of(
-                DateTimeFormatter.ISO_LOCAL_DATE,
-                DateTimeFormatter.ofPattern("MM/dd/yyyy"))) {
-            try {
-                LocalDate parsed = LocalDate.parse(trimmed, formatter);
-                if (endOfDay) {
-                    return parsed.atTime(23, 59, 59).toInstant(ZoneOffset.UTC).toString();
-                }
-                return parsed.atStartOfDay().toInstant(ZoneOffset.UTC).toString();
-            } catch (DateTimeParseException ignored) {
-            }
-        }
-
-        return trimmed;
     }
 
     @Override
@@ -418,7 +311,7 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
         String subPlacements[] = { "Training", "Starter", "BasicBundle", "BigBundle" };
 
         for (int i = 0; i < 100; i++) {
-            int r = new Random().nextInt(100);
+            int r = new Random().nextInt(1000);
             int r2 = new Random().nextInt(100);
             RewardedAdsDocument doc = new RewardedAdsDocument();
             doc.setUserId("user" + (r % 50));
@@ -433,6 +326,7 @@ public class RewardedAdsServiceImpl extends AbstractElasticsearchAggregationServ
             doc.setAccountCreatedDate(accountCreatedDate);
             Date recordDate = new Date(now.getTime() - (r % 7) * 86400 * 1000L);
             doc.setDate(recordDate);
+            doc.setLevel((long) r % 137);
 
             if (doc.getEventType().equals("Source")) {
                 doc.setPlacement(placements[r % placements.length]);

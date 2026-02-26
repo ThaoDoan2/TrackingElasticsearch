@@ -1,12 +1,19 @@
 package com.example.rest_service.service.support;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
+
+import com.example.rest_service.feature.resource.service.ResourceServiceImpl;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -87,7 +94,59 @@ public abstract class AbstractElasticsearchAggregationService {
                 .minimumShouldMatch("1")));
     }
 
-    private static boolean hasText(final String value) {
+    protected static boolean hasText(final String value) {
         return value != null && !value.isBlank();
+    }
+
+    protected static Long parseLong(final String value) {
+        if (!hasText(value)) {
+            return null;
+        }
+
+        try {
+            return Long.parseLong(value.trim());
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    protected static List<String> normalizeValues(final List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+
+        return values.stream()
+                .filter(AbstractElasticsearchAggregationService::hasText)
+                .map(String::trim)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    protected static String normalizeDate(final String rawDate, final boolean endOfDay) {
+        if (!hasText(rawDate)) {
+            return null;
+        }
+
+        final String trimmed = rawDate.trim();
+        try {
+            Instant.parse(trimmed);
+            return trimmed;
+        } catch (DateTimeParseException ignored) {
+        }
+
+        for (DateTimeFormatter formatter : List.of(
+                DateTimeFormatter.ISO_LOCAL_DATE,
+                DateTimeFormatter.ofPattern("MM/dd/yyyy"))) {
+            try {
+                LocalDate parsed = LocalDate.parse(trimmed, formatter);
+                if (endOfDay) {
+                    return parsed.atTime(23, 59, 59).toInstant(ZoneOffset.UTC).toString();
+                }
+                return parsed.atStartOfDay().toInstant(ZoneOffset.UTC).toString();
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+
+        return trimmed;
     }
 }

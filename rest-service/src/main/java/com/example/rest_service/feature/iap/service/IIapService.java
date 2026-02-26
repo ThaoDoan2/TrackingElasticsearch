@@ -2,8 +2,7 @@ package com.example.rest_service.feature.iap.service;
 
 import java.util.List;
 
-import com.example.rest_service.feature.iap.dto.IapChartCompactRowDTO;
-import com.example.rest_service.feature.iap.dto.IapChartResponse;
+import com.example.rest_service.feature.iap.dto.IapCountPerDayDTO;
 import com.example.rest_service.feature.iap.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.feature.iap.dto.IapDTO;
 import com.example.rest_service.feature.iap.dto.IapFilterOptionsDTO;
@@ -19,11 +18,9 @@ public interface IIapService {
 
     List<IapDTO> search(SearchFilters filters);
 
-    IapChartResponse chart(SearchFilters filters);
+    List<IapCountPerDayDTO> countPerDay(SearchFilters filters);
 
-    List<IapChartCompactRowDTO> chartCompact(SearchFilters filters);
-
-    List<IapDailyProductTotalDTO> totalPurchasePerDay(SearchFilters filters);
+    List<IapDailyProductTotalDTO> totalRevenuePerDay(SearchFilters filters);
 
     List<IapPlacementRatioDTO> purchaseRatioByPlacement(SearchFilters filters);
 

@@ -1,10 +1,5 @@
 package com.example.rest_service.feature.gameplay.service;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -449,22 +444,6 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
         }
     }
 
-    private static List<String> normalizeValues(final List<String> values) {
-        if (values == null || values.isEmpty()) {
-            return List.of();
-        }
-
-        return values.stream()
-                .filter(GamePlayServiceImpl::hasText)
-                .map(String::trim)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    private static boolean hasText(final String value) {
-        return value != null && !value.isBlank();
-    }
-
     private static Long extractCardinality(final Aggregate aggregate) {
         if (aggregate != null && aggregate.isCardinality()) {
             return aggregate.cardinality().value();
@@ -485,45 +464,7 @@ public class GamePlayServiceImpl extends AbstractElasticsearchAggregationService
         return 0D;
     }
 
-    private static Long parseLong(final String value) {
-        if (!hasText(value)) {
-            return null;
-        }
 
-        try {
-            return Long.parseLong(value.trim());
-        } catch (NumberFormatException ignored) {
-            return null;
-        }
-    }
-
-    private static String normalizeDate(final String rawDate, final boolean endOfDay) {
-        if (!hasText(rawDate)) {
-            return null;
-        }
-
-        final String trimmed = rawDate.trim();
-        try {
-            Instant.parse(trimmed);
-            return trimmed;
-        } catch (DateTimeParseException ignored) {
-        }
-
-        for (DateTimeFormatter formatter : List.of(
-                DateTimeFormatter.ISO_LOCAL_DATE,
-                DateTimeFormatter.ofPattern("MM/dd/yyyy"))) {
-            try {
-                LocalDate parsed = LocalDate.parse(trimmed, formatter);
-                if (endOfDay) {
-                    return parsed.atTime(23, 59, 59).toInstant(ZoneOffset.UTC).toString();
-                }
-                return parsed.atStartOfDay().toInstant(ZoneOffset.UTC).toString();
-            } catch (DateTimeParseException ignored) {
-            }
-        }
-
-        return trimmed;
-    }
 
     private List<String> getDistinctFieldValues(final String fieldName) {
         return getDistinctFieldValuesWithKeywordFallback(

@@ -1,28 +1,19 @@
 package com.example.rest_service.feature.iap.service;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.example.rest_service.feature.iap.dto.IapChartCompactRowDTO;
-import com.example.rest_service.feature.iap.dto.IapChartResponse;
-import com.example.rest_service.feature.iap.dto.IapChartSeriesDTO;
+import com.example.rest_service.feature.iap.dto.IapCountPerDayDTO;
 import com.example.rest_service.feature.iap.dto.IapDTO;
 import com.example.rest_service.feature.iap.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.feature.iap.dto.IapFilterOptionsDTO;
@@ -30,7 +21,6 @@ import com.example.rest_service.feature.iap.dto.IapPlacementRatioDTO;
 import com.example.rest_service.feature.iap.repository.IapDocument;
 import com.example.rest_service.feature.iap.repository.IapRepository;
 import com.example.rest_service.feature.iap.service.converter.IapDTOConverter;
-import com.example.rest_service.feature.rewardedads.repository.RewardedAdsDocument;
 import com.example.rest_service.feature.user.service.UserAccountService;
 import com.example.rest_service.search.ElasticsearchProxy;
 import com.example.rest_service.search.SearchFilters;
@@ -85,34 +75,23 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
     }
 
     @Override
-    public IapChartResponse chart(SearchFilters filters) {
+    public List<IapCountPerDayDTO> countPerDay(SearchFilters filters) {
         userAccountService.applyGameScope(filters);
         try {
-            return executeChartQuery(filters, "productId", "gameVersion");
-        } catch (Exception error) {
-            LOG.error("IAP chart query failed. Root cause: {}", error.getMessage(), error);
-            return new IapChartResponse(List.of(), List.of());
-        }
-    }
-
-    @Override
-    public List<IapChartCompactRowDTO> chartCompact(SearchFilters filters) {
-        userAccountService.applyGameScope(filters);
-        try {
-            return executeCompactChartQuery(filters, "productId", "gameVersion");
-        } catch (Exception error) {
-            LOG.error("IAP compact chart query failed. Root cause: {}", error.getMessage(), error);
+            return executeCountPerDayQuery(filters);
+        } catch (IOException error) {
+            LOG.error("IAP count per day query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
         }
     }
 
     @Override
-    public List<IapDailyProductTotalDTO> totalPurchasePerDay(SearchFilters filters) {
+    public List<IapDailyProductTotalDTO> totalRevenuePerDay(SearchFilters filters) {
         userAccountService.applyGameScope(filters);
         try {
-            return executeTotalPurchasePerDayQuery(filters, "productId", "gameVersion");
-        } catch (Exception error) {
-            LOG.error("IAP total purchase query failed. Root cause: {}", error.getMessage(), error);
+            return executeTotalRevenuePerDayQuery(filters);
+        } catch (IOException error) {
+            LOG.error("IAP total revenue per day query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
         }
     }
@@ -121,8 +100,8 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
     public List<IapPlacementRatioDTO> purchaseRatioByPlacement(SearchFilters filters) {
         userAccountService.applyGameScope(filters);
         try {
-            return executePurchaseRatioByPlacementQuery(filters, "placement", "gameVersion");
-        } catch (Exception error) {
+            return executePurchaseRatioByPlacementQuery(filters, "placement");
+        } catch (IOException error) {
             LOG.error("IAP purchase ratio by placement query failed. Root cause: {}", error.getMessage(), error);
             return List.of();
         }
@@ -163,55 +142,10 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
         return getDistinctFieldValues("gameVersion");
     }
 
-    private IapChartResponse executeChartQuery(SearchFilters filters, String productField, String gameVersionField)
+    private List<IapCountPerDayDTO> executeCountPerDayQuery(SearchFilters filters)
             throws IOException {
-        SearchResponse<Void> response = executeChartAggregationQuery(filters, productField, gameVersionField);
-
-        Map<String, Map<String, Long>> chartMatrix = new TreeMap<>();
-        Map<String, Long> totalsByProduct = new HashMap<>();
-
-        var byDate = response.aggregations().get("by_date");
-        if (byDate != null && byDate.isDateHistogram()) {
-            for (var dateBucket : byDate.dateHistogram().buckets().array()) {
-                final String label = dateBucket.keyAsString();
-                Map<String, Long> productCountMap = new HashMap<>();
-
-                var byProduct = dateBucket.aggregations().get("by_product");
-                if (byProduct != null && byProduct.isSterms()) {
-                    for (var productBucket : byProduct.sterms().buckets().array()) {
-                        String productId = productBucket.key().stringValue();
-                        long count = productBucket.docCount();
-                        productCountMap.put(productId, count);
-                        totalsByProduct.merge(productId, count, Long::sum);
-                    }
-                }
-
-                chartMatrix.put(label, productCountMap);
-            }
-        }
-
-        List<String> labels = new ArrayList<>(chartMatrix.keySet());
-        List<String> orderedProducts = totalsByProduct.entrySet()
-                .stream()
-                .sorted((left, right) -> Long.compare(right.getValue(), left.getValue()))
-                .map(Map.Entry::getKey)
-                .toList();
-
-        List<IapChartSeriesDTO> series = new ArrayList<>();
-        for (String productId : orderedProducts) {
-            List<Long> values = labels.stream()
-                    .map(dateLabel -> chartMatrix.get(dateLabel).getOrDefault(productId, 0L))
-                    .toList();
-            series.add(new IapChartSeriesDTO(productId, values));
-        }
-
-        return new IapChartResponse(labels, series);
-    }
-
-    private List<IapChartCompactRowDTO> executeCompactChartQuery(SearchFilters filters, String productField,
-            String gameVersionField) throws IOException {
-        SearchResponse<Void> response = executeChartAggregationQuery(filters, productField, gameVersionField);
-        List<IapChartCompactRowDTO> rows = new ArrayList<>();
+        SearchResponse<Void> response = executeChartAggregationQuery(filters);
+        List<IapCountPerDayDTO> rows = new ArrayList<>();
 
         var byDate = response.aggregations().get("by_date");
         if (byDate == null || !byDate.isDateHistogram()) {
@@ -226,15 +160,16 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
                     products.put(productBucket.key().stringValue(), productBucket.docCount());
                 }
             }
-            rows.add(new IapChartCompactRowDTO(dateBucket.keyAsString(), products));
+            rows.add(new IapCountPerDayDTO(dateBucket.keyAsString(), products));
         }
 
         return rows;
     }
 
-    private SearchResponse<Void> executeChartAggregationQuery(SearchFilters filters, String productField,
-            String gameVersionField) throws IOException {
-        final Query query = buildChartQuery(filters, gameVersionField);
+    private SearchResponse<Void> executeChartAggregationQuery(SearchFilters filters)
+            throws IOException {
+        final Query query = buildQuery(filters);
+        final String PRODUCT_ID = "productId";
         return elasticsearchClient.search(s -> s
                 .index(INDEX)
                 .size(0)
@@ -246,13 +181,13 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
                                 .format("yyyy-MM-dd")
                                 .minDocCount(1))
                         .aggregations("by_product", sub -> sub
-                                .terms(t -> t.field(productField).size(1000)))),
+                                .terms(t -> t.field(PRODUCT_ID).size(1000)))),
                 Void.class);
     }
 
-    private List<IapDailyProductTotalDTO> executeTotalPurchasePerDayQuery(SearchFilters filters, String productField,
-            String gameVersionField) throws IOException {
-        final Query query = buildChartQuery(filters, gameVersionField);
+    private List<IapDailyProductTotalDTO> executeTotalRevenuePerDayQuery(SearchFilters filters) throws IOException {
+        final Query query = buildQuery(filters);
+        final String PRODUCT_ID = "productId";
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
                 .index(INDEX)
                 .size(0)
@@ -264,7 +199,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
                                 .format("yyyy-MM-dd")
                                 .minDocCount(1))
                         .aggregations("by_product", sub -> sub
-                                .terms(t -> t.field(productField).size(1000))
+                                .terms(t -> t.field(PRODUCT_ID).size(1000))
                                 .aggregations("total_price", priceAgg -> priceAgg.sum(sum -> sum.field("price"))))),
                 Void.class);
 
@@ -297,9 +232,8 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
     }
 
     private List<IapPlacementRatioDTO> executePurchaseRatioByPlacementQuery(SearchFilters filters,
-            String placementField,
-            String gameVersionField) throws IOException {
-        final Query query = buildChartQuery(filters, gameVersionField);
+            String placementField) throws IOException {
+        final Query query = buildQuery(filters);
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
                 .index(INDEX)
                 .size(0)
@@ -337,11 +271,11 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
         return rows;
     }
 
-    private Query buildChartQuery(SearchFilters filters, String gameVersionField) {
+    private Query buildQuery(SearchFilters filters) {
         final List<Query> filterQueries = new ArrayList<>();
         final List<Query> shouldQueries = new ArrayList<>();
 
-        addMultiValueExactFilter(filterQueries, gameVersionField, filters.getGameVersion());
+        addMultiValueExactFilter(filterQueries, "gameVersion", filters.getGameVersion());
         addMultiValueExactFilter(filterQueries, "gameId", filters.getGameIds());
         addMultiValueExactFilter(filterQueries, "country", filters.getCountryCode());
         addMultiValueExactFilter(filterQueries, "platform", filters.getPlatform());
@@ -404,56 +338,12 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
         }
     }
 
-    private static List<String> normalizeValues(final List<String> values) {
-        if (values == null || values.isEmpty()) {
-            return List.of();
-        }
-
-        return values.stream()
-                .filter(IapServiceImpl::hasText)
-                .map(String::trim)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    private static boolean hasText(final String value) {
-        return value != null && !value.isBlank();
-    }
-
     private List<String> getDistinctFieldValues(final String fieldName) {
         return getDistinctFieldValuesWithKeywordFallback(
                 LOG,
                 INDEX,
                 fieldName,
                 userAccountService.getCurrentUserGameScopeOrEmptyForAdmin());
-    }
-
-    private static String normalizeDate(final String rawDate, final boolean endOfDay) {
-        if (!hasText(rawDate)) {
-            return null;
-        }
-
-        final String trimmed = rawDate.trim();
-        try {
-            Instant.parse(trimmed);
-            return trimmed;
-        } catch (DateTimeParseException ignored) {
-        }
-
-        for (DateTimeFormatter formatter : List.of(
-                DateTimeFormatter.ISO_LOCAL_DATE,
-                DateTimeFormatter.ofPattern("MM/dd/yyyy"))) {
-            try {
-                LocalDate parsed = LocalDate.parse(trimmed, formatter);
-                if (endOfDay) {
-                    return parsed.atTime(23, 59, 59).toInstant(ZoneOffset.UTC).toString();
-                }
-                return parsed.atStartOfDay().toInstant(ZoneOffset.UTC).toString();
-            } catch (DateTimeParseException ignored) {
-            }
-        }
-
-        return trimmed;
     }
 
     @Override
@@ -469,7 +359,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
         float prices[] = { 0.99f, 4.99f, 9.99f, 19.99f, 49.99f, 99.99f };
 
         for (int i = 0; i < 100; i++) {
-            int r = new Random().nextInt(100);
+            int r = new Random().nextInt(1000);
             int r2 = new Random().nextInt(100);
             IapDocument doc = new IapDocument();
             doc.setUserId("user" + (r % 50));
@@ -479,6 +369,7 @@ public class IapServiceImpl extends AbstractElasticsearchAggregationService impl
             doc.setCountry(countries[r % countries.length]);
             doc.setGameVersion("1.0.0");
             doc.setLoggedDay((long) r % 7);
+            doc.setLevel((long) r % 137);
             Date now = new Date();
             Date accountCreatedDate = new Date(now.getTime() - r * 86400 * 1000L);
             doc.setAccountCreatedDate(accountCreatedDate);

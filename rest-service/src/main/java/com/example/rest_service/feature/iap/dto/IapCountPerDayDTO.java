@@ -2,14 +2,14 @@ package com.example.rest_service.feature.iap.dto;
 
 import java.util.Map;
 
-public class IapChartCompactRowDTO {
+public class IapCountPerDayDTO {
     private String date;
     private Map<String, Long> products;
 
-    public IapChartCompactRowDTO() {
+    public IapCountPerDayDTO() {
     }
 
-    public IapChartCompactRowDTO(String date, Map<String, Long> products) {
+    public IapCountPerDayDTO(String date, Map<String, Long> products) {
         this.date = date;
         this.products = products;
     }

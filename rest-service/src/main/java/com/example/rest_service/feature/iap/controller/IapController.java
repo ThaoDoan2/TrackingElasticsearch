@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.rest_service.feature.iap.dto.IapChartCompactRowDTO;
-import com.example.rest_service.feature.iap.dto.IapChartResponse;
+import com.example.rest_service.feature.iap.dto.IapCountPerDayDTO;
 import com.example.rest_service.feature.iap.dto.IapDTO;
 import com.example.rest_service.feature.iap.dto.IapDailyProductTotalDTO;
 import com.example.rest_service.feature.iap.dto.IapFilterOptionsDTO;
@@ -96,42 +95,13 @@ public class IapController {
         return iapService.search(filters);
     }
 
-    @PostMapping("/chart")
-    public IapChartResponse chart(@RequestBody final SearchFilters filters) {
-        return iapService.chart(filters);
+    @PostMapping("/count-by-date")
+    public List<IapCountPerDayDTO> chartCompact(@RequestBody final SearchFilters filters) {
+        return iapService.countPerDay(filters);
     }
 
-    @GetMapping("/chart")
-    public IapChartResponse chart(
-            @RequestParam(required = false) final String term,
-            @RequestParam(required = false) final List<String> gameIds,
-            @RequestParam(required = false) final List<String> gameVersion,
-            @RequestParam(required = false) final List<String> countryCode,
-            @RequestParam(required = false) final List<String> platform,
-            @RequestParam(required = false) final Integer minLevel,
-            @RequestParam(required = false) final Integer maxLevel,
-            @RequestParam(required = false) final String fromDate,
-            @RequestParam(required = false) final String toDate) {
-        SearchFilters filters = new SearchFilters();
-        filters.setTerm(term);
-        filters.setGameIds(gameIds);
-        filters.setGameVersion(gameVersion);
-        filters.setCountryCode(countryCode);
-        filters.setPlatform(platform);
-        filters.setMinLevel(minLevel);
-        filters.setMaxLevel(maxLevel);
-        filters.setFromDate(fromDate);
-        filters.setToDate(toDate);
-        return iapService.chart(filters);
-    }
-
-    @PostMapping("/chart/compact")
-    public List<IapChartCompactRowDTO> chartCompact(@RequestBody final SearchFilters filters) {
-        return iapService.chartCompact(filters);
-    }
-
-    @GetMapping("/chart/compact")
-    public List<IapChartCompactRowDTO> chartCompact(
+    @GetMapping("/count-by-date")
+    public List<IapCountPerDayDTO> chartCompact(
             @RequestParam(required = false) final String term,
             @RequestParam(required = false) final List<String> gameIds,
             @RequestParam(required = false) final List<String> gameVersion,
@@ -153,12 +123,12 @@ public class IapController {
         filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
-        return iapService.chartCompact(filters);
+        return iapService.countPerDay(filters);
     }
 
     @PostMapping("/revenue-by-date")
     public List<IapDailyProductTotalDTO> totalPurchasePerDay(@RequestBody final SearchFilters filters) {
-        return iapService.totalPurchasePerDay(filters);
+        return iapService.totalRevenuePerDay(filters);
     }
 
     @GetMapping("/revenue-by-date")
@@ -182,7 +152,7 @@ public class IapController {
         filters.setMaxLevel(maxLevel);
         filters.setFromDate(fromDate);
         filters.setToDate(toDate);
-        return iapService.totalPurchasePerDay(filters);
+        return iapService.totalRevenuePerDay(filters);
     }
 
     @PostMapping("/ratio/placement")

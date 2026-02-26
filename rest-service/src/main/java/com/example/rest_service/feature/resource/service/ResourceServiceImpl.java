@@ -423,49 +423,6 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
         }
     }
 
-    private static List<String> normalizeValues(final List<String> values) {
-        if (values == null || values.isEmpty()) {
-            return List.of();
-        }
-
-        return values.stream()
-                .filter(ResourceServiceImpl::hasText)
-                .map(String::trim)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    private static boolean hasText(final String value) {
-        return value != null && !value.isBlank();
-    }
-
-    private static String normalizeDate(final String rawDate, final boolean endOfDay) {
-        if (!hasText(rawDate)) {
-            return null;
-        }
-
-        final String trimmed = rawDate.trim();
-        try {
-            Instant.parse(trimmed);
-            return trimmed;
-        } catch (DateTimeParseException ignored) {
-        }
-
-        for (DateTimeFormatter formatter : List.of(
-                DateTimeFormatter.ISO_LOCAL_DATE,
-                DateTimeFormatter.ofPattern("MM/dd/yyyy"))) {
-            try {
-                LocalDate parsed = LocalDate.parse(trimmed, formatter);
-                if (endOfDay) {
-                    return parsed.atTime(23, 59, 59).toInstant(ZoneOffset.UTC).toString();
-                }
-                return parsed.atStartOfDay().toInstant(ZoneOffset.UTC).toString();
-            } catch (DateTimeParseException ignored) {
-            }
-        }
-
-        return trimmed;
-    }
 
     private static Long extractSumAsLong(final Aggregate aggregate) {
         if (aggregate == null) {
@@ -478,17 +435,6 @@ public class ResourceServiceImpl extends AbstractElasticsearchAggregationService
             return Math.round(aggregate.simpleValue().value());
         }
         return 0L;
-    }
-
-    private static Long parseLong(final String value) {
-        if (!hasText(value)) {
-            return null;
-        }
-        try {
-            return Long.parseLong(value.trim());
-        } catch (NumberFormatException ignored) {
-            return null;
-        }
     }
 
     private static String safeText(final String value) {
