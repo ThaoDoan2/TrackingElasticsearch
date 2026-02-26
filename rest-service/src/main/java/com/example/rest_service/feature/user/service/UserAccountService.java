@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.util.StringUtils;
 import org.springframework.http.HttpStatus;
 
+import com.example.rest_service.feature.user.dto.ChangePasswordRequest;
 import com.example.rest_service.feature.user.dto.CreateUserRequest;
 import com.example.rest_service.feature.user.dto.LoginRequest;
 import com.example.rest_service.feature.user.dto.LoginResponse;
@@ -106,6 +107,34 @@ public class UserAccountService implements UserDetailsService {
                 normalizeGameIds(user.getGameIds()),
                 "SESSION",
                 null);
+    }
+
+    public void changePassword(final ChangePasswordRequest request) {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        final String username = authentication.getName();
+        final UserAccountDocument user = repository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        if (Boolean.FALSE.equals(user.getEnabled())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is disabled");
+        }
+
+        final String oldPassword = decodePasswordFromClient(
+                normalizeRequiredText(request.getOldPassword(), "oldPassword"), true);
+        final String newPassword = decodePasswordFromClient(
+                normalizeRequiredText(request.getNewPassword(), "newPassword"), true);
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Old password is incorrect");
+        }
+        if (oldPassword.equals(newPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password must be different");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        repository.save(user);
     }
 
     public UserAccountResponse updateAccess(final String username, final UpdateUserAccessRequest request) {

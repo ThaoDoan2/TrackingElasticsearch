@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.rest_service.feature.user.dto.ChangePasswordRequest;
 import com.example.rest_service.feature.user.dto.LoginRequest;
 import com.example.rest_service.feature.user.dto.LoginResponse;
 import com.example.rest_service.feature.user.service.UserAccountService;
@@ -43,5 +44,10 @@ public class AuthController {
                 .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
 
         return response;
+    }
+
+    @PostMapping("/change-password")
+    public void changePassword(@RequestBody final ChangePasswordRequest request) {
+        userAccountService.changePassword(request);
     }
 }
